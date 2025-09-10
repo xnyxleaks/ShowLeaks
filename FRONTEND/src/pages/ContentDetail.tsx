@@ -11,19 +11,21 @@ import {
   Calendar,
   User,
   Flag,
+  Download,
   Play,
-  Image as ImageIcon,
-  Download
+  Image as ImageIcon
 } from 'lucide-react';
 import type { Content } from '../types';
 import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { linkvertise } from '../components/Linkvertise/Linkvertise';
 
 const ContentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [content, setContent] = useState<Content | null>(null);
   const [relatedContents, setRelatedContents] = useState<Content[]>([]);
+  const [generalContents, setGeneralContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -31,85 +33,42 @@ const ContentDetail: React.FC = () => {
 
   useEffect(() => {
     const fetchContentData = async () => {
-      try {
-        // Para demonstração, vamos usar dados mock
-        // Em produção, você usaria: const contentData = await contentApi.getById(parseInt(id!));
-        
-        const mockContent: Content = {
-          id: parseInt(id!),
-          modelId: 1,
-          title: "Exclusive Premium Collection",
-          url: "https://mega.nz/example-link",
-          thumbnailUrl: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg",
-          type: "image",
-          tags: ["exclusive", "premium", "photoshoot"],
-          views: 1250,
-          status: "active",
-          language: "en",
-          isActive: true,
-          createdAt: "2024-01-15T10:00:00Z",
-          updatedAt: "2024-01-15T10:00:00Z",
-          model: {
-            id: 1,
-            name: "Sophia Martinez",
-            photoUrl: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg",
-            bio: "Professional model and content creator with over 5 years of experience in the industry.",
-            hairColor: "Brunette",
-            eyeColor: "Brown",
-            bodyType: "Slim",
-            bustSize: "34C",
-            height: 165,
-            weight: 55,
-            age: 25,
-            birthPlace: "Miami, FL",
-            ethnicity: "latina",
-            orientation: "Heterosexual",
-            tags: ["model", "latina", "professional"],
-            views: 5000,
-            slug: "sophia-martinez-abc123",
-            isActive: true,
-            createdAt: "2024-01-01T00:00:00Z",
-            updatedAt: "2024-01-15T10:00:00Z"
-          }
-        };
+      if (!id) {
+        navigate('/');
+        return;
+      }
 
-        setContent(mockContent);
+      try {
+
+        setLoading(true);
+        
+        // Carregar dados do conteúdo
+        const contentData = await contentApi.getById(parseInt(id));
+        setContent(contentData);
         
         // Carregar conteúdos relacionados da mesma modelo
-        const mockRelatedContents: Content[] = [
-          {
-            id: 2,
-            modelId: 1,
-            title: "Behind the Scenes",
-            url: "https://mega.nz/example2",
-            thumbnailUrl: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
-            type: "video",
-            tags: ["behind-scenes"],
-            views: 890,
-            status: "active",
-            language: "en",
-            isActive: true,
-            createdAt: "2024-01-10T10:00:00Z",
-            updatedAt: "2024-01-10T10:00:00Z"
-          },
-          {
-            id: 3,
-            modelId: 1,
-            title: "Summer Collection",
-            url: "https://mega.nz/example3",
-            thumbnailUrl: "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg",
-            type: "image",
-            tags: ["summer", "collection"],
-            views: 1100,
-            status: "active",
-            language: "en",
-            isActive: true,
-            createdAt: "2024-01-05T10:00:00Z",
-            updatedAt: "2024-01-05T10:00:00Z"
+        if (contentData.modelId) {
+          const relatedData = await contentApi.getByModel(contentData.modelId, { 
+            limit: 6,
+            sortBy: 'recent'
+          });
+          // Filtrar o conteúdo atual da lista de relacionados
+          const filtered = (relatedData.contents || []).filter(c => c.id !== contentData.id);
+          setRelatedContents(filtered);
+          
+          // Se não há conteúdos relacionados suficientes, carregar conteúdos gerais
+          if (filtered.length < 3) {
+            const generalData = await contentApi.getAll({ 
+              limit: 8,
+              sortBy: 'recent'
+            });
+            // Filtrar o conteúdo atual e os já relacionados
+            const generalFiltered = (generalData.contents || [])
+              .filter(c => c.id !== contentData.id && !filtered.some(r => r.id === c.id))
+              .slice(0, 6);
+            setGeneralContents(generalFiltered);
           }
-        ];
-
-        setRelatedContents(mockRelatedContents);
+        }
       } catch (error) {
         console.error('Error loading content:', error);
         navigate('/');
@@ -117,10 +76,8 @@ const ContentDetail: React.FC = () => {
         setLoading(false);
       }
     };
-  
-    if (id) {
-      fetchContentData();
-    }
+
+    fetchContentData();
   }, [id, navigate]);
 
   const handleBack = () => {
@@ -128,13 +85,20 @@ const ContentDetail: React.FC = () => {
   };
 
   const handleMegaLinkClick = async () => {
+    if (!content) return;
+
     try {
-      if (content) {
-        await contentApi.recordView(content.id);
-        window.open(content.url, '_blank');
-      }
+      // Registrar visualização
+      await contentApi.recordView(content.id);
+      
+      // Abrir link em nova aba
+      window.open(content.url, '_blank');
+      
+      // Atualizar contador local
+      setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
     } catch (error) {
       console.error('Error recording view:', error);
+      // Mesmo com erro, abrir o link
       if (content) {
         window.open(content.url, '_blank');
       }
@@ -142,9 +106,11 @@ const ContentDetail: React.FC = () => {
   };
 
   const handleShare = async () => {
+    if (!content) return;
+
     const shareData = {
-      title: content?.title,
-      text: `Check out ${content?.title} by ${content?.model?.name}`,
+      title: content.title,
+      text: `Check out ${content.title} by ${content.model?.name}`,
       url: window.location.href
     };
 
@@ -168,16 +134,8 @@ const ContentDetail: React.FC = () => {
     }).format(views);
   };
 
-  const getContentIcon = (type: string) => {
-    switch (type) {
-      case 'video':
-        return <Play size={24} className="text-primary-500" />;
-      case 'image':
-        return <ImageIcon size={24} className="text-primary-500" />;
-      default:
-        return <ImageIcon size={24} className="text-primary-500" />;
-    }
-  };
+
+
 
   if (loading) {
     return (
@@ -218,8 +176,6 @@ const ContentDetail: React.FC = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center mb-3">
-                      {getContentIcon(content.type)}
-                      <span className="ml-2 text-primary-400 font-medium capitalize">{content.type}</span>
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-3">
                       {content.title}
@@ -325,7 +281,9 @@ const ContentDetail: React.FC = () => {
                     />
                     <div className="flex-1">
                       <h4 className="text-lg font-semibold text-white mb-2">{content.model.name}</h4>
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-3">{content.model.bio}</p>
+                      {content.model.bio && (
+                        <p className="text-gray-300 text-sm mb-4 line-clamp-3">{content.model.bio}</p>
+                      )}
                       <Link
                         to={`/model/${content.model.slug}`}
                         className="inline-flex items-center px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
@@ -342,48 +300,76 @@ const ContentDetail: React.FC = () => {
             {/* Sidebar - Related Content */}
             <div className="lg:col-span-1">
               <div className="bg-dark-200 rounded-xl shadow-lg p-6 sticky top-24">
-                <h3 className="text-xl font-semibold text-white mb-4">More from {content.model?.name}</h3>
+                {relatedContents.length > 0 ? (
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    More from {content.model?.name}
+                  </h3>
+                ) : (
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    More Content
+                  </h3>
+                )}
                 
                 <div className="space-y-4">
-                  {relatedContents.map((relatedContent) => (
-                    <Link
-                      key={relatedContent.id}
-                      to={`/content/${relatedContent.id}`}
-                      className="block group"
-                    >
-                      <div className="flex space-x-3 p-3 rounded-lg hover:bg-dark-300 transition-colors">
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={relatedContent.thumbnailUrl || content.model?.photoUrl}
-                            alt={relatedContent.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-white font-medium text-sm group-hover:text-primary-400 transition-colors line-clamp-2 mb-1">
-                            {relatedContent.title}
-                          </h4>
-                          <div className="flex items-center text-xs text-gray-400">
-                            <Eye size={12} className="mr-1" />
-                            <span>{formatViews(relatedContent.views)}</span>
-                            <span className="mx-2">•</span>
-                            <span className="capitalize">{relatedContent.type}</span>
+                  {(relatedContents.length > 0 ? relatedContents : generalContents).length > 0 ? (
+                    (relatedContents.length > 0 ? relatedContents : generalContents).map((relatedContent) => (
+                      <button
+                        key={relatedContent.id}
+                        onClick={() => handleContentClick(relatedContent.id)}
+                        className="block group w-full text-left"
+                      >
+                        <div className="flex space-x-3 p-3 rounded-lg hover:bg-dark-300 transition-colors">
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-dark-400">
+                            {relatedContent.thumbnailUrl ? (
+                              <img
+                                src={relatedContent.thumbnailUrl}
+                                alt={relatedContent.title}
+                                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                              />
+                            ) : (
+                              <img
+                                src={relatedContent.model?.photoUrl}
+                                alt={relatedContent.title}
+                                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                              />
+                            )}
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-medium text-sm group-hover:text-primary-400 transition-colors line-clamp-2 mb-1">
+                              {relatedContent.title}
+                            </h4>
+                            {relatedContent.model && (
+                              <p className="text-xs text-gray-400 mb-1">
+                                by {relatedContent.model.name}
+                              </p>
+                            )}
+                            <div className="flex items-center text-xs text-gray-400">
+                              <Eye size={12} className="mr-1" />
+                              <span>{formatViews(relatedContent.views)}</span>
+                              <span className="mx-1">•</span>
+                              <span>{new Date(relatedContent.createdAt).toLocaleDateString()}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-4xl mb-2">📱</div>
+                      <p className="text-gray-400 text-sm">Loading more content...</p>
+                    </div>
+                  )}
                 </div>
 
                 {content.model && (
                   <div className="mt-6 pt-6 border-t border-dark-100">
-                    <Link
-                      to={`/model/${content.model.slug}`}
-                      className="block w-full text-center px-4 py-3 bg-dark-300 hover:bg-dark-100 text-gray-300 hover:text-white rounded-lg transition-colors"
+                    <button
+                      onClick={() => navigate(`/model/${content.model!.slug}`)}
+                      className="w-full text-center px-4 py-3 bg-dark-300 hover:bg-dark-100 text-gray-300 hover:text-white rounded-lg transition-colors"
                     >
                       View All Content from {content.model.name}
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>

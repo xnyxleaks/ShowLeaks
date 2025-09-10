@@ -69,6 +69,11 @@ export const modelsApi = {
 
 // Content API
 export const contentApi = {
+  getAll: async (params?: { page?: number; limit?: number; sortBy?: string; search?: string }) => {
+    const response = await api.get<ApiResponse<Content[]>>('/content', { params });
+    return response.data;
+  },
+  
   getByModel: async (modelId: number, params?: { page?: number; limit?: number; type?: string; sortBy?: string }) => {
     const response = await api.get<ApiResponse<Content[]>>(`/content/model/${modelId}`, { params });
     return response.data;

@@ -141,14 +141,6 @@ const ModelDetail: React.FC = () => {
     navigate(`/content/${contentId}`);
   };
 
-  const getContentTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return '🎥';
-      case 'image': return '📷';
-      case 'gallery': return '🖼️';
-      default: return '📄';
-    }
-  };
 
   if (loading) {
     return (
@@ -442,18 +434,12 @@ const ModelDetail: React.FC = () => {
                             className="w-full h-full object-cover object-center"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-dark-400">
-                            <span className="text-4xl">{getContentTypeIcon(content.type)}</span>
-                          </div>
+                          <>
+                          </>
                         )}
 
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
 
-                        <div className="absolute top-2 left-2">
-                          <span className="px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full capitalize">
-                            {content.type}
-                          </span>
-                        </div>
 
                         <div className="absolute top-2 right-2">
                           <div className="flex items-center px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full">

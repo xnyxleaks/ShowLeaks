@@ -4,6 +4,69 @@ const { Content, Model, UserHistory } = require('../models');
 const { Op } = require('sequelize');
 const authMiddleware = require('../Middleware/Auth');
 
+// Listar todos os conteúdos
+router.get('/', async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = 'recent',
+      search
+    } = req.query;
+
+    const offset = (page - 1) * limit;
+    const where = { isActive: true, status: 'active' };
+    let order = [];
+
+    // Filtros
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { '$model.name$': { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    // Ordenação
+    switch (sortBy) {
+      case 'popular':
+        order = [['views', 'DESC']];
+        break;
+      case 'oldest':
+        order = [['createdAt', 'ASC']];
+        break;
+      case 'recent':
+      default:
+        order = [['createdAt', 'DESC']];
+        break;
+    }
+
+    const { count, rows } = await Content.findAndCountAll({
+      where,
+      order,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      include: [{
+        model: Model,
+        as: 'model',
+        attributes: ['id', 'name', 'slug', 'photoUrl']
+      }]
+    });
+
+    res.json({
+      contents: rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+        itemsPerPage: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar conteúdos:', error);
+    res.status(500).json({ error: 'Erro ao buscar conteúdos', details: error.message });
+  }
+});
+
 // Listar conteúdos por modelo
 router.get('/model/:modelId', async (req, res) => {
   try {

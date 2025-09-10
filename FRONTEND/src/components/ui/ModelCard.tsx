@@ -14,7 +14,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
 
   useEffect(() => {
     if (!user?.isPremium && !user?.isAdmin) {
-      linkvertise("1329936", { whitelist: ["extreme-leaks.vercel.app"] });
+      linkvertise("1329936", { whitelist: ["mega.nz"] });
     }
   }, [user]);
 

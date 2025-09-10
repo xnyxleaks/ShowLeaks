@@ -19,6 +19,7 @@ export interface Model {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  contentCount?: number;
 }
 
 export interface Content {
