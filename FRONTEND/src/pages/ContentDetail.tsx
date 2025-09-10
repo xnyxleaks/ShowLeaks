@@ -1,0 +1,405 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import Button from '../components/ui/Button';
+import ReportModal from '../components/ui/ReportModal';
+import { 
+  ArrowLeft, 
+  ExternalLink, 
+  Share2, 
+  MoreVertical, 
+  Eye, 
+  Calendar,
+  User,
+  Flag,
+  Play,
+  Image as ImageIcon,
+  Download
+} from 'lucide-react';
+import type { Content } from '../types';
+import { contentApi } from '../services/api';
+import { useAuthStore } from '../store/authStore';
+
+const ContentDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [content, setContent] = useState<Content | null>(null);
+  const [relatedContents, setRelatedContents] = useState<Content[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    const fetchContentData = async () => {
+      try {
+        // Para demonstração, vamos usar dados mock
+        // Em produção, você usaria: const contentData = await contentApi.getById(parseInt(id!));
+        
+        const mockContent: Content = {
+          id: parseInt(id!),
+          modelId: 1,
+          title: "Exclusive Premium Collection",
+          url: "https://mega.nz/example-link",
+          thumbnailUrl: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg",
+          type: "image",
+          tags: ["exclusive", "premium", "photoshoot"],
+          views: 1250,
+          status: "active",
+          language: "en",
+          isActive: true,
+          createdAt: "2024-01-15T10:00:00Z",
+          updatedAt: "2024-01-15T10:00:00Z",
+          model: {
+            id: 1,
+            name: "Sophia Martinez",
+            photoUrl: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg",
+            bio: "Professional model and content creator with over 5 years of experience in the industry.",
+            hairColor: "Brunette",
+            eyeColor: "Brown",
+            bodyType: "Slim",
+            bustSize: "34C",
+            height: 165,
+            weight: 55,
+            age: 25,
+            birthPlace: "Miami, FL",
+            ethnicity: "latina",
+            orientation: "Heterosexual",
+            tags: ["model", "latina", "professional"],
+            views: 5000,
+            slug: "sophia-martinez-abc123",
+            isActive: true,
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-15T10:00:00Z"
+          }
+        };
+
+        setContent(mockContent);
+        
+        // Carregar conteúdos relacionados da mesma modelo
+        const mockRelatedContents: Content[] = [
+          {
+            id: 2,
+            modelId: 1,
+            title: "Behind the Scenes",
+            url: "https://mega.nz/example2",
+            thumbnailUrl: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
+            type: "video",
+            tags: ["behind-scenes"],
+            views: 890,
+            status: "active",
+            language: "en",
+            isActive: true,
+            createdAt: "2024-01-10T10:00:00Z",
+            updatedAt: "2024-01-10T10:00:00Z"
+          },
+          {
+            id: 3,
+            modelId: 1,
+            title: "Summer Collection",
+            url: "https://mega.nz/example3",
+            thumbnailUrl: "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg",
+            type: "image",
+            tags: ["summer", "collection"],
+            views: 1100,
+            status: "active",
+            language: "en",
+            isActive: true,
+            createdAt: "2024-01-05T10:00:00Z",
+            updatedAt: "2024-01-05T10:00:00Z"
+          }
+        ];
+
+        setRelatedContents(mockRelatedContents);
+      } catch (error) {
+        console.error('Error loading content:', error);
+        navigate('/');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    if (id) {
+      fetchContentData();
+    }
+  }, [id, navigate]);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleMegaLinkClick = async () => {
+    try {
+      if (content) {
+        await contentApi.recordView(content.id);
+        window.open(content.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error recording view:', error);
+      if (content) {
+        window.open(content.url, '_blank');
+      }
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: content?.title,
+      text: `Check out ${content?.title} by ${content?.model?.name}`,
+      url: window.location.href
+    };
+
+    if (navigator.share && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log('Share cancelled');
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+    setShowDropdown(false);
+  };
+
+  const formatViews = (views: number) => {
+    return new Intl.NumberFormat('en-US', { 
+      notation: 'compact',
+      maximumFractionDigits: 1 
+    }).format(views);
+  };
+
+  const getContentIcon = (type: string) => {
+    switch (type) {
+      case 'video':
+        return <Play size={24} className="text-primary-500" />;
+      case 'image':
+        return <ImageIcon size={24} className="text-primary-500" />;
+      default:
+        return <ImageIcon size={24} className="text-primary-500" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark-300">
+        <div className="animate-pulse text-primary-500 font-semibold text-xl">Loading content...</div>
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark-300">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-4">Content not found</h2>
+          <Button onClick={handleBack}>Go Back</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <main className="pt-20 min-h-screen bg-dark-300">
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center text-gray-400 hover:text-primary-500 transition-colors mb-6"
+          >
+            <ArrowLeft size={20} className="mr-2" />
+            <span>Back</span>
+          </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              {/* Content Header */}
+              <div className="bg-dark-200 rounded-xl shadow-lg p-6 mb-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-3">
+                      {getContentIcon(content.type)}
+                      <span className="ml-2 text-primary-400 font-medium capitalize">{content.type}</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-white mb-3">
+                      {content.title}
+                    </h1>
+                    <div className="flex items-center space-x-4 text-sm text-gray-400">
+                      <div className="flex items-center">
+                        <Eye size={16} className="mr-1 text-primary-500" />
+                        <span>{formatViews(content.views)} views</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar size={16} className="mr-1 text-primary-500" />
+                        <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="bg-dark-300 hover:bg-dark-100 text-white p-2 rounded-lg transition-colors"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+                    
+                    {showDropdown && (
+                      <div className="absolute right-0 mt-2 w-48 bg-dark-200 rounded-lg shadow-lg overflow-hidden z-10">
+                        <button
+                          onClick={handleShare}
+                          className="w-full px-4 py-3 text-left text-gray-300 hover:bg-dark-100 flex items-center"
+                        >
+                          <Share2 size={16} className="mr-2" />
+                          Share Content
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowReportModal(true);
+                            setShowDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-left text-gray-300 hover:bg-dark-100 flex items-center"
+                        >
+                          <Flag size={16} className="mr-2" />
+                          Report Content
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tags */}
+                {content.tags && content.tags.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2">
+                      {content.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-primary-500/20 text-primary-300 text-sm rounded-full border border-primary-500/30"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mega Link Section */}
+                <div className="bg-gradient-to-r from-primary-500/10 to-primary-600/10 border border-primary-500/20 rounded-xl p-6">
+                  <div className="flex items-center mb-4">
+                    <Download size={24} className="text-primary-500 mr-3" />
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Premium Content Access</h3>
+                      <p className="text-gray-300 text-sm">Click below to access the full content</p>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    onClick={handleMegaLinkClick}
+                    className="group"
+                  >
+                    <span className="flex items-center justify-center">
+                      <ExternalLink size={20} className="mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                      Mega Link
+                    </span>
+                  </Button>
+                  
+                  <p className="text-xs text-gray-500 text-center mt-3">
+                    By accessing this content, you confirm you are 18+ and accept our terms.
+                  </p>
+                </div>
+              </div>
+
+              {/* Model Info */}
+              {content.model && (
+                <div className="bg-dark-200 rounded-xl shadow-lg p-6">
+                  <h3 className="text-xl font-semibold text-white mb-4">About the Model</h3>
+                  <div className="flex items-start space-x-4">
+                    <img
+                      src={content.model.photoUrl}
+                      alt={content.model.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-white mb-2">{content.model.name}</h4>
+                      <p className="text-gray-300 text-sm mb-4 line-clamp-3">{content.model.bio}</p>
+                      <Link
+                        to={`/model/${content.model.slug}`}
+                        className="inline-flex items-center px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+                      >
+                        <User size={16} className="mr-2" />
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar - Related Content */}
+            <div className="lg:col-span-1">
+              <div className="bg-dark-200 rounded-xl shadow-lg p-6 sticky top-24">
+                <h3 className="text-xl font-semibold text-white mb-4">More from {content.model?.name}</h3>
+                
+                <div className="space-y-4">
+                  {relatedContents.map((relatedContent) => (
+                    <Link
+                      key={relatedContent.id}
+                      to={`/content/${relatedContent.id}`}
+                      className="block group"
+                    >
+                      <div className="flex space-x-3 p-3 rounded-lg hover:bg-dark-300 transition-colors">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={relatedContent.thumbnailUrl || content.model?.photoUrl}
+                            alt={relatedContent.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-medium text-sm group-hover:text-primary-400 transition-colors line-clamp-2 mb-1">
+                            {relatedContent.title}
+                          </h4>
+                          <div className="flex items-center text-xs text-gray-400">
+                            <Eye size={12} className="mr-1" />
+                            <span>{formatViews(relatedContent.views)}</span>
+                            <span className="mx-2">•</span>
+                            <span className="capitalize">{relatedContent.type}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {content.model && (
+                  <div className="mt-6 pt-6 border-t border-dark-100">
+                    <Link
+                      to={`/model/${content.model.slug}`}
+                      className="block w-full text-center px-4 py-3 bg-dark-300 hover:bg-dark-100 text-gray-300 hover:text-white rounded-lg transition-colors"
+                    >
+                      View All Content from {content.model.name}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        contentId={content?.id}
+        title={content?.title || 'Content'}
+      />
+    </>
+  );
+};
+
+export default ContentDetail;
