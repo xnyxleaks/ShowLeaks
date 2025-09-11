@@ -9,6 +9,11 @@ import Premium from './pages/Premium';
 import DMCA from './pages/DMCA';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminModels from './pages/admin/AdminModels';
+import AdminContent from './pages/admin/AdminContent';
+import AdminReports from './pages/admin/AdminReports';
+import BillingPortal from './pages/BillingPortal';
 
 function App() {
   return (
@@ -25,6 +30,11 @@ function App() {
             <Route path="/dmca" element={<DMCA />} />
             <Route path="/success" element={<PaymentSuccess />} />
             <Route path="/cancel" element={<PaymentCancel />} />
+            <Route path="/billing" element={<BillingPortal />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/models" element={<AdminModels />} />
+            <Route path="/admin/content" element={<AdminContent />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
           </Routes>
         </div>
         <Footer />

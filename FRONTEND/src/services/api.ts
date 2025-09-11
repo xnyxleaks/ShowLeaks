@@ -166,6 +166,13 @@ export const authApi = {
   }
 };
 
+// Billing API
+export const billingApi = {
+  createPortalSession: async (email: string) => {
+    const response = await api.post('/billing/portal', { email });
+    return response.data;
+  }
+};
 // Age Verification API
 export const ageVerificationApi = {
   confirm: async (confirmed: boolean) => {

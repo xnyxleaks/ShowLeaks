@@ -31,6 +31,12 @@ const ContentDetail: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const { user } = useAuthStore();
 
+  // Aplicar monetização Linkvertise para usuários não-premium
+  useEffect(() => {
+    if (!user?.isPremium && !user?.isAdmin) {
+      linkvertise("1329936", { whitelist: ["mega.nz"] });
+    }
+  }, [user]);
   useEffect(() => {
     const fetchContentData = async () => {
       if (!id) {

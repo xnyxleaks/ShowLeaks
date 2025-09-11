@@ -37,6 +37,7 @@ const reportsRouter = require('./routes/reports');
 const i18nRouter = require('./routes/i18n');
 const { router: ageVerificationRouter, ageVerificationMiddleware } = require('./routes/ageVerification');
 const purchaseRouter = require('./routes/Purchase');
+const billingRouter = require('./routes/billing');
 
 app.use('/auth', authRouter);
 app.use('/age-verification', ageVerificationRouter);
@@ -47,6 +48,7 @@ app.use('/models', ageVerificationMiddleware, modelsRouter);
 app.use('/content', ageVerificationMiddleware, contentRouter);
 app.use('/reports', reportsRouter);
 app.use('/purchase', purchaseRouter);
+app.use('/billing', billingRouter);
 
 // Rota de saúde
 app.get('/health', (req, res) => {

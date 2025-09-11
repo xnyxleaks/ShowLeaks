@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flame, Menu, X, User, Crown, ChevronDown, LogOut, UserCircle, Globe } from 'lucide-react';
+import { Flame, Menu, X, User, Crown, ChevronDown, LogOut, UserCircle, Globe, CreditCard, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import AuthModal from '../auth/AuthModal';
 import Button from '../ui/Button';
@@ -92,6 +92,13 @@ const Header: React.FC = () => {
                 DMCA
               </NavLink>
               
+              {user?.isAdmin && (
+                <NavLink to="/admin" active={location.pathname.startsWith('/admin')}>
+                  <Shield size={16} className="mr-1 inline" />
+                  Admin
+                </NavLink>
+              )}
+              
               <div className="relative">
                 <button
                   onClick={() => setShowLanguageSelector(!showLanguageSelector)}
@@ -138,6 +145,16 @@ const Header: React.FC = () => {
                       <UserDropdown user={user} logout={logout} />
                     )}
                   </div>
+                  
+                  {user.isPremium && (
+                    <Link
+                      to="/billing"
+                      className="flex items-center text-gray-200 hover:text-primary-400 transition-colors"
+                    >
+                      <CreditCard size={16} className="mr-2" />
+                      <span>Billing</span>
+                    </Link>
+                  )}
                   
                   <Button 
                     variant="outline" 
@@ -186,6 +203,13 @@ const Header: React.FC = () => {
               <MobileNavLink to="/dmca" active={location.pathname === '/dmca'}>
                 DMCA
               </MobileNavLink>
+              
+              {user?.isAdmin && (
+                <MobileNavLink to="/admin" active={location.pathname.startsWith('/admin')}>
+                  <Shield size={16} className="mr-2 inline" />
+                  Admin Panel
+                </MobileNavLink>
+              )}
               
               <div className="px-4 py-2">
                 <button
@@ -263,6 +287,13 @@ const Header: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  <button
+                    onClick={() => navigate('/billing')}
+                    className="px-4 py-2 text-gray-200 hover:text-primary-400 rounded-lg transition-colors text-left flex items-center mb-2"
+                  >
+                    <CreditCard size={16} className="mr-2" />
+                    Billing
+                  </button>
                   <button
                     onClick={logout}
                     className="px-4 py-2 text-primary-500 hover:bg-dark-400 rounded-lg transition-colors text-left flex items-center"
