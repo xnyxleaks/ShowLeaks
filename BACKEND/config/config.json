@@ -14,10 +14,10 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "postgres.flgpllvpdsnodygrknjn",
-    "password": "Extremeleaks2025",
+    "username": "postgres.qgjikytuzektxzfwdaau",
+    "password": "Extremeleaks1120",
     "database": "postgres",
-    "host": "aws-0-sa-east-1.pooler.supabase.com",
+    "host": "aws-0-sa-east-2.pooler.supabase.com",
     "port": 6543,
     "dialect": "postgres"
   }
