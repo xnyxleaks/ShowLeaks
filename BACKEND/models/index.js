@@ -18,7 +18,7 @@ if (url) {
     // mescla opções do config.json se existirem
     ...(cfg.dialectOptions ? { dialectOptions: cfg.dialectOptions } : {}),
     ...(cfg.pool ? { pool: cfg.pool } : {}),
-    // Configurações específicas para Vercel
+    
     ...(process.env.VERCEL ? {
       dialectOptions: {
         ssl: {
