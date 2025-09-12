@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       
       set({ user, loading: false });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Email verification failed';
+      const errorMessage = (error as any)?.response?.data?.error || 'Falha na verificação do email';
       set({ error: errorMessage, loading: false });
       throw error;
     }
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       await authApi.resendVerification(email);
       set({ loading: false });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to resend verification';
+      const errorMessage = (error as any)?.response?.data?.error || 'Falha ao reenviar verificação';
       set({ error: errorMessage, loading: false });
       throw error;
     }

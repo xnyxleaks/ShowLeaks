@@ -9,6 +9,8 @@ import Premium from './pages/Premium';
 import DMCA from './pages/DMCA';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
+import EmailVerification from './pages/EmailVerification';
+import ResendVerification from './pages/ResendVerification';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminModels from './pages/admin/AdminModels';
 import AdminContent from './pages/admin/AdminContent';
@@ -31,6 +33,8 @@ function App() {
             <Route path="/dmca" element={<DMCA />} />
             <Route path="/success" element={<PaymentSuccess />} />
             <Route path="/cancel" element={<PaymentCancel />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
+            <Route path="/resend-verification" element={<ResendVerification />} />
             <Route path="/billing" element={<BillingPortal />} />
             <Route path="/account" element={<YourAccount />} />
             <Route path="/admin" element={<AdminDashboard />} />

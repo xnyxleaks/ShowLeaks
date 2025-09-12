@@ -120,11 +120,10 @@ const ContentDetail: React.FC = () => {
   const handleResendVerification = async () => {
     if (user?.email) {
       try {
-        // Call resend verification API
-        alert('Verification email sent! Check your inbox.');
+        window.open('/resend-verification', '_blank');
         setShowContentLimit(false);
       } catch (error) {
-        alert('Error sending verification email. Please try again.');
+        console.error('Error:', error);
       }
     }
   };

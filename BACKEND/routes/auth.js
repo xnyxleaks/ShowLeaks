@@ -114,6 +114,10 @@ router.post('/verify-email', async (req, res) => {
   try {
     const { token } = req.body;
 
+    if (!token) {
+      return res.status(400).json({ error: 'Token é obrigatório' });
+    }
+
     const user = await User.findOne({
       where: {
         verificationToken: token,
@@ -122,17 +126,18 @@ router.post('/verify-email', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ error: 'Token inválido ou expirado' });
+      return res.status(400).json({ error: 'Invalid token, expired token, or user already verified' });
     }
 
-    await user.update({
+    // Atualizar usuário
+    const updatedUser = await user.update({
       isVerified: true,
       verificationToken: null
     });
 
     // Gerar token de acesso
     const accessToken = sign(
-      { email: user.email, id: user.id },
+      { email: updatedUser.email, id: updatedUser.id },
       process.env.TOKEN_VERIFY_ACCESS
     );
 
@@ -140,11 +145,18 @@ router.post('/verify-email', async (req, res) => {
       message: 'Email verificado com sucesso!',
       token: accessToken,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isPremium: user.isPremium,
-        isVerified: user.isVerified
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isPremium: updatedUser.isPremium,
+        isVerified: updatedUser.isVerified,
+        language: updatedUser.language,
+        country: updatedUser.country,
+        ageConfirmed: updatedUser.ageConfirmed,
+        isAdmin: updatedUser.isAdmin,
+        expiredPremium: updatedUser.expiredPremium,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt
       }
     });
   } catch (error) {
@@ -199,6 +211,10 @@ router.post('/resend-verification', async (req, res) => {
   try {
     const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ error: 'Email é obrigatório' });
+    }
+
     const user = await User.findOne({
       where: {
         email,
@@ -207,7 +223,7 @@ router.post('/resend-verification', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found or already verified' });
+      return res.status(404).json({ error: 'Usuário não encontrado ou já verificado' });
     }
 
     // Generate new token
@@ -241,10 +257,10 @@ router.post('/resend-verification', async (req, res) => {
       text: `Email Verification - ExtremeLeaks\n\nClick the link below to verify your email:\n${verificationUrl}\n\nThis link will expire in 24 hours.`
     });
 
-    res.json({ message: 'Verification email resent' });
+    res.json({ message: 'Email de verificação reenviado com sucesso' });
   } catch (error) {
     console.error('Error resending verification email:', error);
-    res.status(500).json({ error: 'Failed to resend verification email.' });
+    res.status(500).json({ error: 'Erro ao reenviar email de verificação' });
   }
 });
 

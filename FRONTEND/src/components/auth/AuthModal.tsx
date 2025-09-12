@@ -87,6 +87,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   Check your inbox at: <strong>{email}</strong>
                 </p>
               </div>
+              <div className="mb-4">
+                <button
+                  onClick={() => {
+                    window.open('/resend-verification', '_blank');
+                  }}
+                  className="text-primary-400 hover:text-primary-300 text-sm transition-colors"
+                >
+                  Didn't receive the email? Click here to resend
+                </button>
+              </div>
               <p className="text-xs text-gray-400">
                 You can browse content now, but verification is required for premium features.
               </p>
