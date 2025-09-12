@@ -1,24 +1,47 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session); // +++
 const db = require('./models');
 require('dotenv').config();
 const { Pool } = require('pg');
 
 const app = express();
 
-app.use(cors());
+// CORS: permita cookies se houver front separado
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
 
-// Configurar sessões
+// Se estiver atrás de proxy/LB (Vercel/Render/NGINX), habilite:
+app.set('trust proxy', 1); // +++
+
+// Sessão com Postgres (elimina MemoryStore)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  name: 'sid',
+  store: new pgSession({
+    conString: process.env.POSTGRES_URL,
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET, // remova default inseguro
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 horas
-  }
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // exige HTTPS em prod
+    sameSite: 'lax', // use 'none' se front em domínio diferente + HTTPS
+    maxAge: 24 * 60 * 60 * 1000
+  },
+  proxy: true
 }));
+
+// Body parser: aplique globalmente, exceto webhook
+app.use((req, res, next) => {
+  if (req.originalUrl === '/webhook') return next();
+  return express.json()(req, res, next);
+});
+
 const webhookRouter = require('./routes/webhook');
 app.use('/webhook', webhookRouter);
 
