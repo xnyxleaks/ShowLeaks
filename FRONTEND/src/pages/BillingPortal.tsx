@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { CreditCard, ArrowLeft, ExternalLink, Crown, Calendar, DollarSign } from 'lucide-react';
+import { CreditCard, ArrowLeft, ExternalLink, Crown, Calendar, DollarSign, XCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import axios from 'axios';
 
@@ -9,6 +9,7 @@ const BillingPortal: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -40,6 +41,35 @@ const BillingPortal: React.FC = () => {
       alert('Error opening billing portal. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!user || !confirm('Are you sure you want to cancel your subscription? You will lose premium access at the end of your billing period.')) {
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      const token = sessionStorage.getItem('token');
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/billing/cancel`,
+        { email: user.email },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert('Subscription cancelled successfully. You will retain premium access until the end of your billing period.');
+      // Refresh user data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      alert('Error cancelling subscription. Please try again or contact support.');
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -149,6 +179,30 @@ const BillingPortal: React.FC = () => {
             <p className="text-gray-500 text-sm mt-4">
               You will be redirected to Stripe's secure billing portal in a new tab.
             </p>
+
+            {user.isPremium && (
+              <div className="mt-8 pt-6 border-t border-dark-100">
+                <h3 className="text-lg font-semibold text-white mb-4">Cancel Subscription</h3>
+                <p className="text-gray-300 mb-4">
+                  You can cancel your subscription at any time. You'll retain premium access until the end of your current billing period.
+                </p>
+                <Button
+                  variant="danger"
+                  onClick={handleCancelSubscription}
+                  disabled={cancelLoading}
+                  className="flex items-center"
+                >
+                  {cancelLoading ? (
+                    'Cancelling...'
+                  ) : (
+                    <>
+                      <XCircle size={18} className="mr-2" />
+                      Cancel Subscription
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Support */}

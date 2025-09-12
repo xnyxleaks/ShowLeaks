@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { Mail, X } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
 
@@ -14,7 +14,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showEmailReminder, setShowEmailReminder] = useState(false);
   const { login, register, loading, error } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +29,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           return;
         }
         await register({ name, email, password, ageConfirmed });
-        setShowSuccess(true);
+        setShowEmailReminder(true);
       }
     } catch (error) {
       // Error is handled by the store
@@ -41,7 +41,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setEmail('');
     setPassword('');
     setAgeConfirmed(false);
-    setShowSuccess(false);
+    setShowEmailReminder(false);
   };
 
   const toggleMode = () => {
@@ -59,10 +59,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-dark-200 w-full max-w-md rounded-xl shadow-xl p-6 m-4 animate-fade-in-up">
-        {showSuccess ? (
+        {showEmailReminder ? (
           <div className="text-center">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Check Your Email</h2>
+              <h2 className="text-2xl font-bold text-white">Account Created!</h2>
               <button
                 onClick={handleClose}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -72,19 +72,28 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
             
             <div className="mb-6">
-              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X size={32} className="text-green-500" />
+              <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail size={32} className="text-blue-500" />
               </div>
-              <p className="text-gray-300 mb-4">
-                We've sent a verification email to <strong className="text-white">{email}</strong>
+              <p className="text-white text-lg font-semibold mb-2">Welcome to ExtremeLeaks!</p>
+              <p className="text-gray-300 mb-2">
+                Your account has been created successfully.
               </p>
-              <p className="text-sm text-gray-400">
-                Please check your inbox and click the verification link to activate your account.
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4">
+                <p className="text-yellow-300 text-sm">
+                  <strong>Important:</strong> Please verify your email to unlock all features and purchase premium.
+                </p>
+                <p className="text-yellow-400 text-xs mt-1">
+                  Check your inbox at: <strong>{email}</strong>
+                </p>
+              </div>
+              <p className="text-xs text-gray-400">
+                You can browse content now, but verification is required for premium features.
               </p>
             </div>
             
             <Button variant="primary" fullWidth onClick={handleClose}>
-              Got it
+              Start Browsing
             </Button>
           </div>
         ) : (

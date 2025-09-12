@@ -227,7 +227,7 @@ const Models: React.FC = () => {
             </div>
             
             {/* Models Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 min-h-[800px]">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 min-h-[300px]">
               {isLoading ? (
                 Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
                   <div

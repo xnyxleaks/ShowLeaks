@@ -5,6 +5,8 @@ import ReportModal from '../components/ui/ReportModal';
 import FilterPanel from '../components/ui/FilterPanel';
 import SearchInput from '../components/ui/SearchInput';
 import Pagination from '../components/ui/pagination';
+import CommentSection from '../components/ui/CommentSection';
+import LikeButton from '../components/ui/LikeButton';
 import { 
   ArrowLeft, 
   Share2, 
@@ -315,6 +317,17 @@ const ModelDetail: React.FC = () => {
                         {model.bio}
                       </p>
                     )}
+                    
+                    {/* Like Button */}
+                    <div className="mt-6">
+                      <LikeButton
+                        modelId={model.id}
+                        type="model"
+                        initialLikes={0}
+                        initialIsLiked={false}
+                        size="lg"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -491,6 +504,14 @@ const ModelDetail: React.FC = () => {
                     className="mt-6"
                   />
                 )}
+              </div>
+              
+              {/* Comments Section */}
+              <div className="mt-6">
+                <CommentSection
+                  modelId={model.id}
+                  type="model"
+                />
               </div>
             </div>
           </div>

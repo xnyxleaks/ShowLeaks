@@ -20,26 +20,31 @@ const Premium: React.FC = () => {
   
     const Handlepurchase = async () => {
       if (!token) {
-        alert('Você precisa estar logado');
+        alert('You need logged');
+        return;
+      }
+      
+      // Check if user is verified
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/dashboard`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      if (!response.data.isVerified) {
+        alert('You need to verify your email before purchasing premium. Please check your inbox.');
         return;
       }
     
       try {
-        // Primeiro, verifica o status do usuário
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/auth/dashboard`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-    
-        const isPremium = response.data.isPremium;
+      const isPremium = response.data.isPremium;
         const email = response.data.email;
     
         if (isPremium) {
-          alert('Você já é Premium');
+          alert('You are already Premium');
           return;
         }
         
@@ -60,9 +65,7 @@ const Premium: React.FC = () => {
         const { url } = paymentResponse.data;
         window.open(url, "_blank");
       } catch (err) {
-        console.error('Erro ao iniciar compra:', err.response?.data || err.message);
-        console.log(token)
-        alert('Erro ao iniciar compra. Veja o console para detalhes.');
+        alert('Error starting purchase');
       }
     };
     
@@ -129,7 +132,6 @@ const Premium: React.FC = () => {
               </div>
             </div>
             
-           
           </div>
         </div>
       </section>

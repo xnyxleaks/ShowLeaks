@@ -22,7 +22,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user }) => {
   return (
     <div className="absolute right-0 mt-2 w-72 bg-dark-300 border border-dark-400 rounded-lg shadow-lg py-2 z-50 transform origin-top-right transition-all duration-200 ease-in-out">
       <div className="px-4 py-2 border-b border-dark-400">
-        <Link to="/" className="flex items-center py-2 text-gray-200 hover:text-primary-400 transition-colors">
+        <Link to="/account" className="flex items-center py-2 text-gray-200 hover:text-primary-400 transition-colors">
           <UserCircle size={18} className="mr-2 text-primary-500" />
           <span className="font-medium">Your Account</span>
         </Link>

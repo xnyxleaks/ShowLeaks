@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "Ruan1120#@",
-    "database": "ExtremeLeaks",
+    "database": "Extremeleaks",
     "host": "localhost",
     "dialect": "postgres"
   },

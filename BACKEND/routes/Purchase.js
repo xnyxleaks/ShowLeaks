@@ -18,25 +18,20 @@ router.post('/', authMiddleware, async (req, res) => {
             monthly: process.env.STRIPE_PRICEID_MONTHLY,
         };
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            customer_email: email,
-            line_items: [
-              {
-                price_data: {
-                  currency: 'usd',
-                  product_data: {
-                    name: 'Premium Membership',
-                  },
-                  unit_amount: 999, 
-                },
-                quantity: 1,
-              },
-            ],
-            mode: 'payment', 
-            success_url: `${process.env.FRONTEND_URL}/#/success`,
-            cancel_url: `${process.env.FRONTEND_URL}/#/cancel`,
-          });
+const session = await stripe.checkout.sessions.create({
+  payment_method_types: ['card'],
+  customer_email: email,
+  line_items: [
+    {
+      price: prices,
+      quantity: 1,
+    },
+  ],
+  mode: 'payment',
+  success_url: `${process.env.FRONTEND_URL}/success`,
+  cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+});
+
           
 
         res.json({ url: session.url });

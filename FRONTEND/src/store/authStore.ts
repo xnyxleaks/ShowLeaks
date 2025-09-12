@@ -35,7 +35,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       sessionStorage.setItem('user', JSON.stringify(user));
   
       set({ user, loading: false });
-      window.location.reload();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       set({ error: errorMessage, loading: false });
@@ -48,7 +47,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ loading: true, error: null });
       const data = await authApi.register(credentials);
       
-      // Registration successful, but user needs to verify email
+      // User is logged in immediately but needs verification for premium
+      const user = data.user;
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(user));
+      
+      set({ user, loading: false });
       set({ loading: false, error: null });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';

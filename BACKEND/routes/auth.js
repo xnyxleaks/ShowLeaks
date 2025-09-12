@@ -9,17 +9,15 @@ const authMiddleware = require('../Middleware/Auth');
 const { Op } = require('sequelize');
 
 // Configurar nodemailer (você deve configurar suas credenciais SMTP)
-
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: false, // true se porta for 465
+  secure: true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   }
 });
-
 
 // Registro com verificação de email
 router.post('/register', async (req, res) => {
@@ -52,31 +50,58 @@ router.post('/register', async (req, res) => {
       country,
       ageConfirmed,
       verificationToken,
-      isVerified: false
+      isVerified: false // User can browse but needs verification for premium
     });
 
     // Enviar email de verificação
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
     
     try {
-      await transporter.sendMail({
-        from: process.env.FROM_EMAIL,
-        to: email,
-        subject: 'Verificação de Email - ExtremeLeaks',
-        html: `
-          <h2>Bem-vindo ao ExtremeLeaks!</h2>
-          <p>Clique no link abaixo para verificar seu email:</p>
-          <a href="${verificationUrl}">Verificar Email</a>
-          <p>Este link expira em 24 horas.</p>
-        `
-      });
-    } catch (emailError) {
-      console.error('Erro ao enviar email:', emailError);
-    }
+  await transporter.sendMail({
+    from: process.env.FROM_EMAIL,
+    to: email,
+    subject: 'Email Verification - ExtremeLeaks',
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
+        <h2 style="color: #3b82f6; text-align: center;">Welcome to ExtremeLeaks!</h2>
+        <p style="font-size: 15px; line-height: 1.6; text-align: center;">
+          Please click the button below to verify your email address:
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;">
+            Verify Email
+          </a>
+        </div>
+        <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+          This link will expire in 24 hours. If you did not create an account, you can safely ignore this email.
+        </p>
+      </div>
+    `
+  });
+} catch (emailError) {
+  console.error('Error sending email:', emailError);
+  // Continue even if email fails
+}
+
+
+    // Generate access token immediately (user can browse without verification)
+    const accessToken = sign(
+      { email: newUser.email, id: newUser.id },
+      process.env.TOKEN_VERIFY_ACCESS
+    );
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso. Verifique seu email para ativar a conta.',
-      userId: newUser.id
+      message: 'Usuário criado com sucesso. Verifique seu email para desbloquear recursos premium.',
+      token: accessToken,
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        isPremium: newUser.isPremium,
+        isVerified: newUser.isVerified,
+        language: newUser.language,
+        country: newUser.country
+      }
     });
   } catch (error) {
     console.error('Erro no registro:', error);
@@ -182,34 +207,47 @@ router.post('/resend-verification', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado ou já verificado' });
+      return res.status(404).json({ error: 'User not found or already verified' });
     }
 
-    // Gerar novo token
+    // Generate new token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     await user.update({ verificationToken });
 
-    // Reenviar email
+    // Build verification URL
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    
+
+    // Send styled email
     await transporter.sendMail({
       from: process.env.FROM_EMAIL,
       to: email,
-      subject: 'Verificação de Email - ExtremeLeaks',
+      subject: 'Email Verification - ExtremeLeaks',
       html: `
-        <h2>Verificação de Email</h2>
-        <p>Clique no link abaixo para verificar seu email:</p>
-        <a href="${verificationUrl}">Verificar Email</a>
-        <p>Este link expira em 24 horas.</p>
-      `
+        <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
+          <h2 style="color: #3b82f6; text-align: center;">Email Verification</h2>
+          <p style="font-size: 15px; line-height: 1.6; text-align: center;">
+            Please click the button below to verify your email address:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;">
+              Verify Email
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+            This link will expire in 24 hours. If you did not request this, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+      text: `Email Verification - ExtremeLeaks\n\nClick the link below to verify your email:\n${verificationUrl}\n\nThis link will expire in 24 hours.`
     });
 
-    res.json({ message: 'Email de verificação reenviado' });
+    res.json({ message: 'Verification email resent' });
   } catch (error) {
-    console.error('Erro ao reenviar verificação:', error);
-    res.status(500).json({ error: 'Erro ao reenviar email de verificação.' });
+    console.error('Error resending verification email:', error);
+    res.status(500).json({ error: 'Failed to resend verification email.' });
   }
 });
+
 
 // Esqueci minha senha
 router.post('/forgot-password', async (req, res) => {
@@ -218,39 +256,52 @@ router.post('/forgot-password', async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Gerar token de reset
+    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 3600000); // 1 hora
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
 
     await user.update({
       resetPasswordToken: resetToken,
       resetPasswordExpires: resetExpires
     });
 
-    // Enviar email de reset
+    // Build reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    
+
+    // Send styled email
     await transporter.sendMail({
       from: process.env.FROM_EMAIL,
       to: email,
-      subject: 'Redefinir Senha - ExtremeLeaks',
+      subject: 'Reset Password - ExtremeLeaks',
       html: `
-        <h2>Redefinir Senha</h2>
-        <p>Clique no link abaixo para redefinir sua senha:</p>
-        <a href="${resetUrl}">Redefinir Senha</a>
-        <p>Este link expira em 1 hora.</p>
-      `
+        <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
+          <h2 style="color: #ef4444; text-align: center;">Reset Your Password</h2>
+          <p style="font-size: 15px; line-height: 1.6; text-align: center;">
+            Click the button below to reset your password:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;">
+              Reset Password
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+            This link will expire in 1 hour. If you did not request a password reset, please ignore this email.
+          </p>
+        </div>
+      `,
+      text: `Reset Password - ExtremeLeaks\n\nClick the link below to reset your password:\n${resetUrl}\n\nThis link will expire in 1 hour.`
     });
 
-    res.json({ message: 'Email de redefinição enviado' });
+    res.json({ message: 'Password reset email sent' });
   } catch (error) {
-    console.error('Erro ao solicitar reset:', error);
-    res.status(500).json({ error: 'Erro ao solicitar redefinição de senha.' });
+    console.error('Error requesting password reset:', error);
+    res.status(500).json({ error: 'Failed to request password reset.' });
   }
 });
+
 
 // Redefinir senha
 router.post('/reset-password', async (req, res) => {

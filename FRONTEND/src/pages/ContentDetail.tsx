@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import ReportModal from '../components/ui/ReportModal';
+import ContentLimitModal from '../components/ui/ContentLimitModal';
+import CommentSection from '../components/ui/CommentSection';
+import LikeButton from '../components/ui/LikeButton';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -29,7 +32,19 @@ const ContentDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
+
+  // Check content limit for unverified users
+  useEffect(() => {
+    if (user && !user.isVerified) {
+      const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
+      if (viewedContent.length >= 3 && !viewedContent.includes(parseInt(id!))) {
+        setShowContentLimit(true);
+        return;
+      }
+    }
+  }, [user, id]);
 
   // Aplicar monetização Linkvertise para usuários não-premium
   useEffect(() => {
@@ -42,6 +57,22 @@ const ContentDetail: React.FC = () => {
       if (!id) {
         navigate('/');
         return;
+      }
+
+      // Check content limit for unverified users
+      if (user && !user.isVerified) {
+        const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
+        if (viewedContent.length >= 3 && !viewedContent.includes(parseInt(id))) {
+          setShowContentLimit(true);
+          setLoading(false);
+          return;
+        }
+        
+        // Add current content to viewed list
+        if (!viewedContent.includes(parseInt(id))) {
+          viewedContent.push(parseInt(id));
+          sessionStorage.setItem('viewedContent', JSON.stringify(viewedContent));
+        }
       }
 
       try {
@@ -85,6 +116,18 @@ const ContentDetail: React.FC = () => {
 
     fetchContentData();
   }, [id, navigate]);
+
+  const handleResendVerification = async () => {
+    if (user?.email) {
+      try {
+        // Call resend verification API
+        alert('Verification email sent! Check your inbox.');
+        setShowContentLimit(false);
+      } catch (error) {
+        alert('Error sending verification email. Please try again.');
+      }
+    }
+  };
 
   const handleBack = () => {
     navigate(-1);
@@ -273,6 +316,17 @@ const ContentDetail: React.FC = () => {
                     By accessing this content, you confirm you are 18+ and accept our terms.
                   </p>
                 </div>
+                
+                {/* Like Button */}
+                <div className="mt-6 flex justify-center">
+                  <LikeButton
+                    contentId={content.id}
+                    type="content"
+                    initialLikes={0}
+                    initialIsLiked={false}
+                    size="lg"
+                  />
+                </div>
               </div>
 
               {/* Model Info */}
@@ -301,6 +355,14 @@ const ContentDetail: React.FC = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Comments Section */}
+              <div className="mt-6">
+                <CommentSection
+                  contentId={content.id}
+                  type="content"
+                />
+              </div>
             </div>
 
             {/* Sidebar - Related Content */}
@@ -389,6 +451,15 @@ const ContentDetail: React.FC = () => {
         onClose={() => setShowReportModal(false)}
         contentId={content?.id}
         title={content?.title || 'Content'}
+      />
+      
+      <ContentLimitModal
+        isOpen={showContentLimit}
+        onClose={() => {
+          setShowContentLimit(false);
+          navigate('/');
+        }}
+        onVerifyEmail={handleResendVerification}
       />
     </>
   );

@@ -209,4 +209,44 @@ export const i18nApi = {
   }
 };
 
+// Comments API
+export const commentsApi = {
+  getAll: async (params?: { contentId?: number; modelId?: number; page?: number; limit?: number }) => {
+    const response = await api.get('/comments', { params });
+    return response.data;
+  },
+  
+  create: async (data: { contentId?: number; modelId?: number; text: string }) => {
+    const response = await api.post('/comments', data);
+    return response.data;
+  },
+  
+  update: async (id: number, data: { text: string }) => {
+    const response = await api.put(`/comments/${id}`, data);
+    return response.data;
+  },
+  
+  delete: async (id: number) => {
+    await api.delete(`/comments/${id}`);
+  },
+  
+  toggleLike: async (id: number) => {
+    const response = await api.post(`/comments/${id}/like`);
+    return response.data;
+  }
+};
+
+// Likes API
+export const likesApi = {
+  toggle: async (data: { contentId?: number; modelId?: number; type: 'content' | 'model' }) => {
+    const response = await api.post('/likes/toggle', data);
+    return response.data;
+  },
+  
+  getStats: async (params: { contentId?: number; modelId?: number }) => {
+    const response = await api.get('/likes/stats', { params });
+    return response.data;
+  }
+};
+
 export default api;

@@ -117,7 +117,37 @@ export interface ApiResponse<T> {
   models?: Model[];
   contents?: Content[];
   reports?: Report[];
+  comments?: Comment[];
   pagination?: PaginationInfo;
   message?: string;
   error?: string;
+}
+
+export interface Comment {
+  id: number;
+  userId: number;
+  contentId?: number;
+  modelId?: number;
+  text: string;
+  likes: number;
+  isLiked: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    name: string;
+    isPremium: boolean;
+    isAdmin: boolean;
+  };
+}
+
+export interface Like {
+  id: number;
+  userId: number;
+  contentId?: number;
+  modelId?: number;
+  type: 'content' | 'model';
+  createdAt: string;
+  updatedAt: string;
 }

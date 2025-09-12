@@ -190,7 +190,7 @@ const Header: React.FC = () => {
               isOpen ? 'max-h-96 opacity-100 py-4' : 'max-h-0 opacity-0 py-0'
             }`}
           >
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2 bg-dark-400/50 rounded-lg p-4 backdrop-blur-sm">
               <MobileNavLink to="/" active={location.pathname === '/'}>
                 Home
               </MobileNavLink>
@@ -206,18 +206,18 @@ const Header: React.FC = () => {
               
               {user?.isAdmin && (
                 <MobileNavLink to="/admin" active={location.pathname.startsWith('/admin')}>
-                  <Shield size={16} className="mr-2 inline" />
+                  <Shield size={16} className="mr-2 inline text-green-500" />
                   Admin Panel
                 </MobileNavLink>
               )}
               
-              <div className="px-4 py-2">
+              <div className="px-3 py-2 border-t border-dark-300 mt-2 pt-3">
                 <button
                   onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                  className="w-full flex items-center justify-between text-gray-200 hover:text-primary-400"
+                  className="w-full flex items-center justify-between text-gray-200 hover:text-primary-400 transition-colors"
                 >
                   <div className="flex items-center">
-                    <Globe size={16} className="text-gray-400 mr-2" />
+                    <Globe size={16} className="text-primary-500 mr-2" />
                     <span className="font-medium">Language</span>
                   </div>
                   <ChevronDown 
@@ -236,20 +236,17 @@ const Header: React.FC = () => {
               </div>
               
               {user ? (
-                <>
-                  <div className="px-4 py-2">
+                <div className="border-t border-dark-300 pt-3 mt-2">
+                  <div className="px-3 py-2">
                     <button
                       onClick={toggleUserDropdown}
-                      className="w-full flex items-center justify-between text-gray-200 hover:text-primary-400"
+                      className="w-full flex items-center justify-between text-gray-200 hover:text-primary-400 transition-colors"
                     >
                       <div className="flex items-center">
-                        <User size={16} className="text-gray-400 mr-2" />
+                        <User size={16} className="text-primary-500 mr-2" />
                         <span className="font-medium">{user.name}</span>
                         {user.isPremium && (
-                          <div className="ml-2 flex items-center text-yellow-500">
-                            <Crown size={16} className="mr-1" />
-                            <span className="text-sm font-medium">Premium</span>
-                          </div>
+                          <Crown size={14} className="ml-2 text-yellow-500" />
                         )}
                       </div>
                       <ChevronDown 
@@ -261,51 +258,66 @@ const Header: React.FC = () => {
                     </button>
                     
                     {showUserDropdown && (
-                      <div className="mt-2 pl-6 pr-2 py-2 bg-dark-400 rounded-lg">
-                        <Link to='/' className="flex items-center py-2 text-gray-200 hover:text-primary-400">
+                      <div className="mt-3 pl-4 pr-2 py-3 bg-dark-500/50 rounded-lg border border-dark-300">
+                        <div className="flex items-center py-2 text-gray-200 mb-2">
                           <UserCircle size={16} className="mr-2" />
-                          <span>Your Account</span>
-                        </Link>
-                        <div className="px-2 py-3 space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-gray-400 text-sm">ID:</span>
-                            <span className="text-gray-200 text-sm">{user.id}</span>
+                          <span className="font-medium">Account Info</span>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Email:</span>
+                            <span className="text-gray-200 text-xs">{user.email}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400 text-sm">Email:</span>
-                            <span className="text-gray-200 text-sm">{user.email}</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Status:</span>
+                            <div className="flex items-center">
+                              {user.isPremium ? (
+                                <>
+                                  <Crown size={12} className="text-yellow-500 mr-1" />
+                                  <span className="text-yellow-500 text-xs font-medium">Premium</span>
+                                </>
+                              ) : (
+                                <span className="text-gray-400 text-xs">Free</span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400 text-sm">Status:</span>
-                            <span className="text-gray-200 text-sm">{user.isPremium ? 'Premium' : 'Free'}</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Verified:</span>
+                            <span className={`text-xs ${user.isVerified ? 'text-green-500' : 'text-red-500'}`}>
+                              {user.isVerified ? 'Yes' : 'No'}
+                            </span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400 text-sm">Created:</span>
-                            <span className="text-gray-200 text-sm">{new Date(user.createdAt).toLocaleDateString()}</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Joined:</span>
+                            <span className="text-gray-200 text-xs">{new Date(user.createdAt).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => navigate('/billing')}
-                    className="px-4 py-2 text-gray-200 hover:text-primary-400 rounded-lg transition-colors text-left flex items-center mb-2"
-                  >
-                    <CreditCard size={16} className="mr-2" />
-                    Billing
-                  </button>
+                  
+                  {user.isPremium && (
+                    <Link
+                      to="/billing"
+                      className="flex items-center px-3 py-2 text-gray-200 hover:text-primary-400 hover:bg-dark-300/50 rounded-lg transition-all duration-200 mb-2"
+                    >
+                      <CreditCard size={16} className="mr-2 text-primary-500" />
+                      <span>Billing</span>
+                    </Link>
+                  )}
+                  
                   <button
                     onClick={logout}
-                    className="px-4 py-2 text-primary-500 hover:bg-dark-400 rounded-lg transition-colors text-left flex items-center"
+                    className="w-full flex items-center px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200"
                   >
                     <LogOut size={16} className="mr-2" />
                     Logout
                   </button>
-                </>
+                </div>
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-2 text-primary-500 hover:bg-dark-400 rounded-lg transition-colors text-left flex items-center"
+                  className="flex items-center px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-all duration-200 font-medium"
                 >
                   <User size={16} className="mr-2" />
                   Sign In
@@ -346,10 +358,10 @@ const NavLink: React.FC<NavLinkProps> = ({ to, active, children }) => (
 const MobileNavLink: React.FC<NavLinkProps> = ({ to, active, children }) => (
   <Link
     to={to}
-    className={`block py-2 px-4 rounded-lg transition-colors duration-200 ${
+    className={`flex items-center py-2.5 px-3 rounded-lg transition-all duration-200 font-medium ${
       active 
-        ? 'bg-dark-400 text-primary-500 font-medium' 
-        : 'text-gray-200 hover:bg-dark-400 hover:text-primary-400'
+        ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+        : 'text-gray-200 hover:bg-dark-300/50 hover:text-primary-400'
     }`}
   >
     {children}
