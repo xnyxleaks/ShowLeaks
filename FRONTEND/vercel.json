@@ -1,10 +1,16 @@
 {
   "builds": [
-    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
   ],
-  "routes": [
-    { "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|ico|json|txt|webmanifest|woff2?))", "dest": "/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/index.html",
+      "missing": [
+        { "type": "file",  "value": "/:path*" },
+        { "type": "route", "value": "/:path*" }
+      ]
+    }
   ],
   "cleanUrls": true,
   "trailingSlash": false
