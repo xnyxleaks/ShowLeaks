@@ -36,7 +36,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
     };
     return ethnicity ? labels[ethnicity as keyof typeof labels] : '';
   };
-
+//
   return (
     <a 
       href={`model/${model.slug}`} 
