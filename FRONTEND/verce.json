@@ -1,0 +1,17 @@
+{
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
+  ],
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/index.html",
+      "missing": [
+        { "type": "file",  "value": "/:path*" },
+        { "type": "route", "value": "/:path*" }
+      ]
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}
