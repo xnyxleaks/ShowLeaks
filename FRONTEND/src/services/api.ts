@@ -88,6 +88,16 @@ export const contentApi = {
     const response = await api.post<Content>('/content', data);
     return response.data;
   },
+
+    update: async (id: number, data: Partial<Content>) => {
+    const response = await api.put<Content>(`/content/${id}`, data);
+    return response.data;
+  },
+
+  // ADICIONAR:
+  delete: async (id: number) => {
+    await api.delete(`/content/${id}`);
+  },
   
   recordView: async (id: number) => {
     const response = await api.post(`/content/${id}/view`);

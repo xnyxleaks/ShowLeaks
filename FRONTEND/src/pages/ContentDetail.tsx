@@ -344,7 +344,7 @@ const ContentDetail: React.FC = () => {
                         <p className="text-gray-300 text-sm mb-4 line-clamp-3">{content.model.bio}</p>
                       )}
                       <Link
-                        to={`model/${content.model.slug}`}
+                        to={`/model/${content.model.slug}`}
                         className="inline-flex items-center px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
                       >
                         <User size={16} className="mr-2" />

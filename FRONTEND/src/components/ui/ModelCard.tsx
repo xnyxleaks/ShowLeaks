@@ -39,7 +39,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
 //
   return (
     <Link
-      to={`model/${model.slug}`} 
+      to={`/model/${model.slug}`} 
       className="group block overflow-hidden bg-dark-200 rounded-lg shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
     >
       <div className="relative aspect-[3/4] overflow-hidden">
