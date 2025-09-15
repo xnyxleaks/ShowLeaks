@@ -22,6 +22,7 @@ import type { Content } from '../types';
 import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { linkvertise } from '../components/Linkvertise/Linkvertise';
+import LoadingScreen from '../components/LoadingScreen';
 
 const ContentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -182,16 +183,22 @@ const ContentDetail: React.FC = () => {
     }).format(views);
   };
 
+    const handleContentClick = (targetId: number) => {
+    if (!targetId) return;
+    if (String(targetId) === id) return; // evita recarregar o mesmo
+    navigate(`/content/${targetId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-300">
-        <div className="animate-pulse text-primary-500 font-semibold text-xl">Loading content...</div>
-      </div>
-    );
-  }
+
+if (loading) {
+  return (
+    <LoadingScreen/>
+  );
+}
+
 
   if (!content) {
     return (
