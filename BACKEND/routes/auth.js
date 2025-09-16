@@ -7,6 +7,30 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const authMiddleware = require('../Middleware/Auth');
 const { Op } = require('sequelize');
+const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  },
+});
 
 // Configurar nodemailer (você deve configurar suas credenciais SMTP)
 const transporter = nodemailer.createTransport({
@@ -239,17 +263,76 @@ router.post('/resend-verification', async (req, res) => {
       to: email,
       subject: 'Email Verification - ExtremeLeaks',
       html: `
-        <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
-          <h2 style="color: #3b82f6; text-align: center;">Email Verification</h2>
-          <p style="font-size: 15px; line-height: 1.6; text-align: center;">
+        <div style="font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #121212 0%, #0d0d0d 100%); color: #f1f5f9; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: auto; border: 1px solid #1e1e1e;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);">
+              <span style="color: white; font-size: 36px;">📧</span>
+            </div>
+            <h1 style="color: #f97316; font-size: 28px; font-weight: bold; margin: 0; text-align: center;">Email Verification</h1>
+          </div>
+          <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+            <p style="font-size: 16px; line-height: 1.6; text-align: center; margin: 0; color: #f1f5f9;">
+              You requested a new verification email for your ExtremeLeaks account.
+            </p>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; text-align: center; margin-bottom: 32px; color: #cbd5e1;">
+              <span style="color: white; font-size: 36px;">🎉</span>
+            </div>
+            <h1 style="color: #f97316; font-size: 28px; font-weight: bold; margin: 0; text-align: center;">Welcome to ExtremeLeaks!</h1>
+          </div>
+          <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+            <p style="font-size: 16px; line-height: 1.6; text-align: center; margin: 0; color: #f1f5f9;">
+              Thank you for joining our community! We're excited to have you on board.
+            </p>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; text-align: center; margin-bottom: 32px; color: #cbd5e1;">
             Please click the button below to verify your email address:
           </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;">
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${verificationUrl}" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 16px 32px; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); transition: all 0.3s ease;">
               Verify Email
             </a>
           </div>
-          <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+          <div style="border-top: 1px solid #1e1e1e; padding-top: 24px; margin-top: 32px;">
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 0;">
+              This link will expire in 24 hours for security reasons.
+            </p>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 8px 0 0 0;">
+              If you didn't request this, you can safely ignore this email.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #1e1e1e;">
+            <p style="font-size: 12px; color: #475569; margin: 0;">
+              © 2024 ExtremeLeaks. All rights reserved.
+            </p>
+          </div>
+        </div>
+        <div style="max-width: 600px; margin: 20px auto 0; text-align: center;">
+          <p style="font-size: 11px; color: #64748b; margin: 0;">
+            <h3 style="color: #22c55e; font-size: 16px; font-weight: 600; margin: 0 0 12px 0; text-align: center;">What's Next?</h3>
+            <ul style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+              <li>Verify your email to unlock all features</li>
+              <li>Browse unlimited premium content</li>
+              <li>Interact with the community</li>
+              <li>Upgrade to premium for exclusive benefits</li>
+            </ul>
+          </div>
+          <div style="border-top: 1px solid #1e1e1e; padding-top: 24px; margin-top: 32px;">
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 0;">
+              This link will expire in 24 hours for security reasons.
+            </p>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 8px 0 0 0;">
+              If you didn't create this account, you can safely ignore this email.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #1e1e1e;">
+            <p style="font-size: 12px; color: #475569; margin: 0;">
+              © 2024 ExtremeLeaks. All rights reserved.
+            </p>
+          </div>
+        </div>
+        <div style="max-width: 600px; margin: 20px auto 0; text-align: center;">
+          <p style="font-size: 11px; color: #64748b; margin: 0;">
             This link will expire in 24 hours. If you did not request this, you can safely ignore this email.
           </p>
         </div>
@@ -293,17 +376,42 @@ router.post('/forgot-password', async (req, res) => {
       to: email,
       subject: 'Reset Password - ExtremeLeaks',
       html: `
-        <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
-          <h2 style="color: #ef4444; text-align: center;">Reset Your Password</h2>
-          <p style="font-size: 15px; line-height: 1.6; text-align: center;">
+        <div style="font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #121212 0%, #0d0d0d 100%); color: #f1f5f9; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: auto; border: 1px solid #1e1e1e;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);">
+              <span style="color: white; font-size: 36px;">🔒</span>
+            </div>
+            <h1 style="color: #f97316; font-size: 28px; font-weight: bold; margin: 0; text-align: center;">Reset Your Password</h1>
+          </div>
+          <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+            <p style="font-size: 16px; line-height: 1.6; text-align: center; margin: 0; color: #f1f5f9;">
+              We received a request to reset your password for your ExtremeLeaks account.
+            </p>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; text-align: center; margin-bottom: 32px; color: #cbd5e1;">
             Click the button below to reset your password:
           </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;">
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${resetUrl}" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 16px 32px; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); transition: all 0.3s ease;">
               Reset Password
             </a>
           </div>
-          <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+          <div style="border-top: 1px solid #1e1e1e; padding-top: 24px; margin-top: 32px;">
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 0;">
+              This link will expire in 1 hour for security reasons.
+            </p>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin: 8px 0 0 0;">
+              If you didn't request this reset, please ignore this email.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #1e1e1e;">
+            <p style="font-size: 12px; color: #475569; margin: 0;">
+              © 2024 ExtremeLeaks. All rights reserved.
+            </p>
+          </div>
+        </div>
+        <div style="max-width: 600px; margin: 20px auto 0; text-align: center;">
+          <p style="font-size: 11px; color: #64748b; margin: 0;">
             This link will expire in 1 hour. If you did not request a password reset, please ignore this email.
           </p>
         </div>
@@ -408,6 +516,64 @@ router.put('/profile', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Erro ao atualizar perfil:', error);
     res.status(500).json({ error: 'Erro ao atualizar perfil.' });
+  }
+});
+
+// Upload profile photo
+router.post('/upload-photo', authMiddleware, upload.single('photo'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+    }
+
+    const userId = req.user.id;
+    const user = await User.findByPk(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // Upload to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'image',
+          folder: 'profile_photos',
+          public_id: `user_${userId}_${Date.now()}`,
+          transformation: [
+            { width: 200, height: 200, crop: 'fill', gravity: 'face' },
+            { quality: 'auto', fetch_format: 'auto' }
+          ]
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
+
+    // Update user profile photo
+    const updatedUser = await user.update({
+      profilePhoto: uploadResult.secure_url
+    });
+
+    res.json({
+      message: 'Foto de perfil atualizada com sucesso',
+      profilePhoto: uploadResult.secure_url,
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        profilePhoto: updatedUser.profilePhoto,
+        isPremium: updatedUser.isPremium,
+        isVerified: updatedUser.isVerified,
+        language: updatedUser.language,
+        country: updatedUser.country
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao fazer upload da foto:', error);
+    res.status(500).json({ error: 'Erro ao fazer upload da foto' });
   }
 });
 

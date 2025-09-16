@@ -274,7 +274,10 @@ const Home: React.FC = () => {
                           </div>
                           
                           <div className="text-xs text-gray-400">
-                            {new Date(content.createdAt).toLocaleDateString()}
+                            {new Date(content.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}
                           </div>
                         </div>
                       </div>

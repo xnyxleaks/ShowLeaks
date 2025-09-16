@@ -14,25 +14,41 @@ interface LanguageSelectorProps {
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onClose }) => {
   const [languages, setLanguages] = useState<Record<string, Language>>({});
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState(localStorage.getItem('language') || 'en');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadLanguages = async () => {
       try {
-        const data = await i18nApi.getLanguages();
-        setLanguages(data);
+        // Usar apenas os idiomas suportados
+        const supportedLanguages = {
+          'en': { name: 'English', country: 'United States', flag: '🇺🇸' },
+          'es': { name: 'Español', country: 'Spain', flag: '🇪🇸' },
+          'pt': { name: 'Português', country: 'Brazil', flag: '🇧🇷' },
+          'fr': { name: 'Français', country: 'France', flag: '🇫🇷' },
+          'de': { name: 'Deutsch', country: 'Germany', flag: '🇩🇪' },
+          'ru': { name: 'Русский', country: 'Russia', flag: '🇷🇺' }
+        };
+        setLanguages(supportedLanguages);
         
         // Get current language from localStorage or detect
         const savedLang = localStorage.getItem('language');
-        if (savedLang && data[savedLang]) {
+        if (savedLang && supportedLanguages[savedLang as keyof typeof supportedLanguages]) {
           setCurrentLanguage(savedLang);
         } else {
-          const detected = await i18nApi.detectLanguage();
-          setCurrentLanguage(detected.detected);
+          setCurrentLanguage('en'); // Default to English
         }
       } catch (error) {
         console.error('Error loading languages:', error);
+        // Fallback to supported languages
+        setLanguages({
+          'en': { name: 'English', country: 'United States', flag: '🇺🇸' },
+          'es': { name: 'Español', country: 'Spain', flag: '🇪🇸' },
+          'pt': { name: 'Português', country: 'Brazil', flag: '🇧🇷' },
+          'fr': { name: 'Français', country: 'France', flag: '🇫🇷' },
+          'de': { name: 'Deutsch', country: 'Germany', flag: '🇩🇪' },
+          'ru': { name: 'Русский', country: 'Russia', flag: '🇷🇺' }
+        });
       } finally {
         setLoading(false);
       }
@@ -46,11 +62,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onClose }) => {
       setCurrentLanguage(langCode);
       localStorage.setItem('language', langCode);
       
-      // Load translations for the selected language
-      await i18nApi.getTranslations(langCode);
+      // Aplicar mudanças de idioma
+      document.documentElement.lang = langCode;
       
-      // Reload page to apply language changes
-      window.location.reload();
+      // Notificar outros componentes sobre a mudança
+      window.dispatchEvent(new CustomEvent('languageChanged', { detail: langCode }));
     } catch (error) {
       console.error('Error changing language:', error);
     }

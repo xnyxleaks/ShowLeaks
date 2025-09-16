@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { authApi } from '../services/api';
 import { 
   User, 
   Mail, 
@@ -15,14 +16,17 @@ import {
   MessageCircle,
   Settings,
   CheckCircle,
-  XCircle
+  XCircle,
+  Camera,
+  Upload
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const YourAccount: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     language: user?.language || 'en',
@@ -39,12 +43,47 @@ const YourAccount: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      // TODO: Implement profile update API call
+      await authApi.updateProfile(formData);
+      updateUser(formData);
       setIsEditing(false);
-      alert('Profile updated successfully!');
+      alert('Perfil atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile');
+      alert('Erro ao atualizar perfil');
+    }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem');
+      return;
+    }
+
+    // Validar tamanho (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const response = await authApi.uploadProfilePhoto(file);
+      // Update both local state and user store
+      if (response.user) {
+        updateUser(response.user);
+      } else {
+        updateUser({ profilePhoto: response.profilePhoto });
+      }
+      alert('Foto de perfil atualizada com sucesso!');
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      alert('Erro ao fazer upload da foto');
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -67,6 +106,51 @@ const YourAccount: React.FC = () => {
             {/* Profile Card */}
             <div className="lg:col-span-2">
               <div className="bg-dark-200 rounded-xl p-6 border border-dark-100">
+                {/* Profile Photo Section */}
+                <div className="flex items-center mb-8">
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-dark-300 flex items-center justify-center">
+                      {user.profilePhoto ? (
+                        <img
+                          src={user.profilePhoto}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={32} className="text-gray-400" />
+                      )}
+                    </div>
+                    <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary-500 hover:bg-primary-600 rounded-full flex items-center justify-center cursor-pointer transition-colors">
+                      {uploadingPhoto ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Camera size={16} className="text-white" />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        disabled={uploadingPhoto}
+                      />
+                    </label>
+                  </div>
+                  <div className="ml-6">
+                    <h3 className="text-xl font-bold text-white">{user.name}</h3>
+                    <p className="text-gray-400">{user.email}</p>
+                    <div className="flex items-center mt-2">
+                      {user.isPremium ? (
+                        <>
+                          <Crown size={16} className="text-yellow-500 mr-1" />
+                          <span className="text-yellow-500 text-sm font-medium">Premium Member</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Free Account</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-white">Profile Information</h2>
                   <Button
@@ -143,6 +227,7 @@ const YourAccount: React.FC = () => {
                         className="w-full px-4 py-3 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="en">English</option>
+                        <option value="es">Español</option>
                         <option value="pt">Português</option>
                         <option value="fr">Français</option>
                         <option value="de">Deutsch</option>
@@ -151,7 +236,14 @@ const YourAccount: React.FC = () => {
                     ) : (
                       <div className="flex items-center px-4 py-3 bg-dark-300/50 rounded-lg">
                         <Globe size={18} className="text-primary-500 mr-3" />
-                        <span className="text-white font-medium">{user.language?.toUpperCase()}</span>
+                        <span className="text-white font-medium">
+                          {user.language === 'en' ? 'English' :
+                           user.language === 'es' ? 'Español' :
+                           user.language === 'pt' ? 'Português' :
+                           user.language === 'fr' ? 'Français' :
+                           user.language === 'de' ? 'Deutsch' :
+                           user.language === 'ru' ? 'Русский' : 'English'}
+                        </span>
                       </div>
                     )}
                   </div>

@@ -14,6 +14,7 @@ interface AuthStore extends AuthState {
   resendVerification: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -96,7 +97,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       await authApi.forgotPassword(email);
       set({ loading: false });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
+      const errorMessage = (error as any)?.response?.data?.error || 'Failed to send reset email';
       set({ error: errorMessage, loading: false });
       throw error;
     }
@@ -108,7 +109,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       await authApi.resetPassword(token, password);
       set({ loading: false });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
+      const errorMessage = (error as any)?.response?.data?.error || 'Failed to reset password';
       set({ error: errorMessage, loading: false });
       throw error;
     }
@@ -129,6 +130,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const user = await authApi.getDashboard();
       set({ user });
+      sessionStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
       // If API call fails, try to use saved user data
       const savedUser = sessionStorage.getItem('user');
@@ -143,5 +145,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
         }
       }
     }
+  },
+
+  updateUser: (userData) => {
+    set((state) => {
+      const updatedUser = { ...state.user, ...userData } as User;
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      return { user: updatedUser };
+    });
   },
 }));

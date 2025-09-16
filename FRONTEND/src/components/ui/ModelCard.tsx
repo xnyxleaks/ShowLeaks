@@ -98,7 +98,10 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
             </div>
             
             <div className="text-xs text-gray-400">
-              {new Date(model.createdAt).toLocaleDateString()}
+              {new Date(model.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+              })}
             </div>
           </div>
         </div>

@@ -244,7 +244,11 @@ const ModelDetail: React.FC = () => {
                   <div className="min-w-0">
                     <h1 className="text-3xl font-bold text-white mb-2">{model.name}</h1>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400">
-                      <span>Added {new Date(model.createdAt).toLocaleDateString()}</span>
+                      <span>Added {new Date(model.createdAt).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}</span>
                       <div className="flex items-center">
                         <Eye size={16} className="mr-1 text-primary-500" />
                         <span>{formatViews(model.views)} views</span>
@@ -464,7 +468,10 @@ const ModelDetail: React.FC = () => {
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           <h4 className="text-white text-sm font-medium mb-1 line-clamp-2">{content.title}</h4>
                           <div className="flex items-center justify-between text-xs text-gray-300">
-                            <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                            <span>{new Date(content.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}</span>
                             {content.tags && content.tags.length > 0 && (
                               <span className="bg-dark-300/50 px-2 py-1 rounded">
                                 {content.tags.length} tag{content.tags.length !== 1 ? 's' : ''}

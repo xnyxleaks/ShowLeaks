@@ -201,9 +201,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentId, modelId, typ
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-primary-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-primary-400 font-medium text-sm">
-                      {comment.user.name.charAt(0).toUpperCase()}
-                    </span>
+                    {comment.user.profilePhoto ? (
+                      <img
+                        src={comment.user.profilePhoto}
+                        alt={comment.user.name}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-primary-400 font-medium text-sm">
+                        {comment.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
@@ -220,7 +228,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentId, modelId, typ
                       )}
                     </div>
                     <span className="text-xs text-gray-500">
-                      {formatTimeAgo(comment.createdAt)}
+                      {new Date(comment.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </span>
                   </div>
                 </div>
@@ -258,7 +272,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentId, modelId, typ
                 </div>
               </div>
 
-              <p className="text-gray-300 mb-3 leading-relaxed">{comment.text}</p>
+              <div id={`comment-${comment.id}`} className="text-gray-300 mb-3 leading-relaxed">
+                {comment.text}
+              </div>
 
               <div className="flex items-center space-x-4">
                 <button

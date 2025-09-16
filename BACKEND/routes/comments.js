@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Comment, User, CommentLike } = require('../models');
+const { createNotification } = require('./notifications');
 const authMiddleware = require('../Middleware/Auth');
 const { Op } = require('sequelize');
 
@@ -231,8 +232,20 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
       await CommentLike.create({ userId, commentId: id });
       await comment.increment('likes');
       
+      // Create notification for comment author (if not self-like)
+      if (comment.userId !== userId) {
+        const liker = await User.findByPk(userId);
+        await createNotification(
+          comment.userId,
+          'comment_like',
+          'Someone liked your comment',
+          `${liker.name} liked your comment`,
+          { commentId: id, likerId: userId }
+        );
+      }
+      
       res.json({
-        message: 'Comentário curtido',
+        message: 'Commentary liked',
         isLiked: true,
         likes: comment.likes + 1
       });

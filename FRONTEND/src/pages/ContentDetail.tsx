@@ -140,8 +140,19 @@ const ContentDetail: React.FC = () => {
       // Registrar visualização
       await contentApi.recordView(content.id);
       
-      // Abrir link em nova aba
-      window.open(content.url, '_blank');
+      // Para usuários não-premium, o link será processado pelo Linkvertise
+      if (!user?.isPremium && !user?.isAdmin) {
+        // O Linkvertise já processou o botão, apenas abrir
+        const linkvertiseUrl = document.querySelector('[data-linkvertise-url]')?.getAttribute('data-linkvertise-url');
+        if (linkvertiseUrl) {
+          window.open(linkvertiseUrl, '_blank');
+        } else {
+          window.open(content.url, '_blank');
+        }
+      } else {
+        // Usuários premium vão direto
+        window.open(content.url, '_blank');
+      }
       
       // Atualizar contador local
       setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
@@ -242,7 +253,11 @@ if (loading) {
                       </div>
                       <div className="flex items-center">
                         <Calendar size={16} className="mr-1 text-primary-500" />
-                        <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                        <span>{new Date(content.createdAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}</span>
                       </div>
                     </div>
                   </div>
@@ -310,6 +325,7 @@ if (loading) {
                     size="lg"
                     fullWidth
                     onClick={handleMegaLinkClick}
+                    data-mega-url={content.url}
                     className="group"
                   >
                     <span className="flex items-center justify-center">
@@ -422,7 +438,10 @@ if (loading) {
                               <Eye size={12} className="mr-1" />
                               <span>{formatViews(relatedContent.views)}</span>
                               <span className="mx-1">•</span>
-                              <span>{new Date(relatedContent.createdAt).toLocaleDateString()}</span>
+                              <span>{new Date(relatedContent.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                              })}</span>
                             </div>
                           </div>
                         </div>

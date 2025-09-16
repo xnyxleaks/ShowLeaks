@@ -173,6 +173,17 @@ export const authApi = {
   updateProfile: async (data: { name?: string; language?: string; country?: string }) => {
     const response = await api.put('/auth/profile', data);
     return response.data;
+  },
+  
+  uploadProfilePhoto: async (file: File) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const response = await api.post('/auth/upload-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   }
 };
 
@@ -242,6 +253,29 @@ export const commentsApi = {
   
   toggleLike: async (id: number) => {
     const response = await api.post(`/comments/${id}/like`);
+    return response.data;
+  }
+};
+
+// Notifications API
+export const notificationsApi = {
+  getAll: async (params?: { page?: number; limit?: number; unreadOnly?: boolean }) => {
+    const response = await api.get('/notifications', { params });
+    return response.data;
+  },
+  
+  markAsRead: async (id: number) => {
+    const response = await api.put(`/notifications/${id}/read`);
+    return response.data;
+  },
+  
+  markAllAsRead: async () => {
+    const response = await api.put('/notifications/read-all');
+    return response.data;
+  },
+  
+  getUnreadCount: async () => {
+    const response = await api.get('/notifications/unread-count');
     return response.data;
   }
 };

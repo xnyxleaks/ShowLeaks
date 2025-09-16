@@ -44,10 +44,22 @@ BR/hqvyNAxBepHOJnBfHkQqaox5diHGqdwXXLwiJKzoK5R26vaI3jg2+d69VPSGL
   };
 
   try {
-    const elements = document.querySelectorAll<HTMLAnchorElement>("a[href]");
+    // Buscar tanto links <a> quanto elementos com data-mega-url
+    const linkElements = document.querySelectorAll<HTMLAnchorElement>("a[href]");
+    const buttonElements = document.querySelectorAll<HTMLElement>("[data-mega-url]");
+    
+    const allElements = [...Array.from(linkElements), ...Array.from(buttonElements)];
 
-    for (const link of elements) {
-      const base_href = markup(link.href);
+    for (const element of allElements) {
+      let base_href: string;
+      
+      if (element instanceof HTMLAnchorElement) {
+        base_href = markup(element.href);
+      } else {
+        const megaUrl = element.getAttribute('data-mega-url');
+        if (!megaUrl) continue;
+        base_href = megaUrl;
+      }
 
       if (!base_href.startsWith("http://") && !base_href.startsWith("https://")) {
         continue;
@@ -95,9 +107,19 @@ BR/hqvyNAxBepHOJnBfHkQqaox5diHGqdwXXLwiJKzoK5R26vaI3jg2+d69VPSGL
       const fullEncryptedHref = `${encryptedHrefBase64}${part2}`;
 
       const base_url = `https://link-to.net/${user_id}/${Math.random() * 1000}/dynamic/`;
+      const finalUrl = `${base_url}?r=${fullEncryptedHref}&v=2`;
 
-      link.href = `${base_url}?r=${fullEncryptedHref}&v=2`;
-      link.target = "_blank";
+      if (element instanceof HTMLAnchorElement) {
+        element.href = finalUrl;
+        element.target = "_blank";
+      } else {
+        // Para botões, adicionar evento de click
+        element.setAttribute('data-linkvertise-url', finalUrl);
+        element.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.open(finalUrl, '_blank');
+        });
+      }
     }
   } catch (error) {
     console.error("Error during key import or link processing:", error);

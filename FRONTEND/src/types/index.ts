@@ -59,6 +59,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  profilePhoto?: string;
   isVerified: boolean;
   language: string;
   country?: string;
@@ -148,6 +149,18 @@ export interface Like {
   contentId?: number;
   modelId?: number;
   type: 'content' | 'model';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Notification {
+  id: number;
+  userId: number;
+  type: 'comment_like' | 'comment_reply' | 'model_follow' | 'content_like';
+  title: string;
+  message: string;
+  data?: any;
+  isRead: boolean;
   createdAt: string;
   updatedAt: string;
 }

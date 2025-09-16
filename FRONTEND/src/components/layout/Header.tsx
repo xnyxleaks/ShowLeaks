@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flame, Menu, X, User, Crown, ChevronDown, LogOut, UserCircle, Globe, CreditCard, Shield } from 'lucide-react';
+import { Flame, Menu, X, User, Crown, ChevronDown, LogOut, UserCircle, Globe, CreditCard, Shield, Bell } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import AuthModal from '../auth/AuthModal';
 import Button from '../ui/Button';
 import UserDropdown from './UserDropdown';
 import LanguageSelector from './LanguageSelector';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,8 @@ const Header: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { fetchUser } = useAuthStore();
@@ -120,12 +123,41 @@ const Header: React.FC = () => {
 
               {user ? (
                 <div className="flex items-center space-x-4">
+                  {/* Notifications */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button 
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className="relative p-2 text-gray-200 hover:text-primary-400 transition-colors"
+                    >
+                      <Bell size={20} />
+                      {unreadNotifications > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                        </span>
+                      )}
+                    </button>
+                    
+                    {showNotifications && (
+                      <NotificationDropdown 
+                        onClose={() => setShowNotifications(false)} 
+                      />
+                    )}
+                  </div>
+
                   <div className="relative" ref={dropdownRef}>
                     <button 
                       onClick={toggleUserDropdown}
                       className="flex items-center text-gray-200 hover:text-primary-400 transition-colors"
                     >
-                      <User size={16} className="text-gray-400 mr-2" />
+                      {user.profilePhoto ? (
+                        <img
+                          src={user.profilePhoto}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full object-cover mr-2"
+                        />
+                      ) : (
+                        <User size={16} className="text-gray-400 mr-2" />
+                      )}
                       <span className="font-medium">{user.name}</span>
                       {user.isPremium && (
                         <div className="ml-2 flex items-center text-yellow-500">

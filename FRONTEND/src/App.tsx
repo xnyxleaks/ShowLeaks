@@ -11,6 +11,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import EmailVerification from './pages/EmailVerification';
 import ResendVerification from './pages/ResendVerification';
+import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminModels from './pages/admin/AdminModels';
 import AdminContent from './pages/admin/AdminContent';
@@ -35,6 +36,7 @@ function App() {
             <Route path="/cancel" element={<PaymentCancel />} />
             <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/resend-verification" element={<ResendVerification />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/billing" element={<BillingPortal />} />
             <Route path="/account" element={<YourAccount />} />
             <Route path="/admin" element={<AdminDashboard />} />

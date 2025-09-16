@@ -13,39 +13,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      isVerified: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false,
-      },
-      verificationToken: {
+      profilePhoto: {
         type: DataTypes.STRING,
-        allowNull: true,
-      },
-      resetPasswordToken: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      resetPasswordExpires: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
-      language: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: 'en',
-      },
-      country: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      ageConfirmed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false,
-      },
-      lastLoginAt: {
-        type: DataTypes.DATE,
         allowNull: true,
       },
       isVerified: {
@@ -112,19 +81,6 @@ module.exports = (sequelize, DataTypes) => {
         as: 'histories'
       });
     };
-    /*  timestamps: true,
-    });
-
-    User.associate = function(models) {
-      User.hasMany(models.Report, {
-        foreignKey: 'userId',
-        as: 'reports'
-      });
-      User.hasMany(models.UserHistory, {
-        foreignKey: 'userId',
-        as: 'histories'
-      });
-    }; */
   
     return User;
   };
