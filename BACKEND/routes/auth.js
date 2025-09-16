@@ -133,7 +133,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Verificar email
 router.post('/verify-email', async (req, res) => {
   try {
     const { token } = req.body;
