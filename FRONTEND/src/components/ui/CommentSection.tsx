@@ -18,6 +18,7 @@ interface Comment {
     name: string;
     isPremium: boolean;
     isAdmin: boolean;
+    profilePhoto?: string | null;
   };
 }
 
