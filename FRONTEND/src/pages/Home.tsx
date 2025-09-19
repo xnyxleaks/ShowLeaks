@@ -11,11 +11,13 @@ import {
   Search, 
   Play,
   Image as ImageIcon,
+  Video,
+  HardDrive,
   Eye,
   Calendar,
   User
 } from 'lucide-react';
-import type { Content, SortOption } from '../types';
+import type { Content, FilterOptions, SortOption } from '../types';
 import { useAuthStore } from '../store/authStore';
 
 const ITEMS_PER_PAGE = 12;
@@ -26,6 +28,7 @@ const Home: React.FC = () => {
   const [contents, setContents] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<FilterOptions>({});
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
@@ -60,7 +63,8 @@ const Home: React.FC = () => {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         sortBy: sortOption,
-        search: searchQuery || undefined
+        search: searchQuery || undefined,
+        ...filters
       };
 
       const response = await contentApi.getAll(params);
@@ -79,11 +83,11 @@ const Home: React.FC = () => {
     if (!showAgeVerification) {
       loadContents();
     }
-  }, [currentPage, sortOption, searchQuery, showAgeVerification]);
+  }, [currentPage, sortOption, searchQuery, filters, showAgeVerification]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, filters]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -106,6 +110,14 @@ const Home: React.FC = () => {
     }).format(views);
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
   const getContentTypeIcon = (type: string) => {
     switch (type) {
       case 'video':
@@ -118,6 +130,16 @@ const Home: React.FC = () => {
         return <Play size={20} className="text-white" />;
     }
   };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setFilters({});
+  };
+
+  const hasActiveFilters = Object.keys(filters).some(key => 
+    filters[key as keyof FilterOptions] !== undefined && 
+    filters[key as keyof FilterOptions] !== ''
+  );
 
   return (
     <>
@@ -253,6 +275,30 @@ const Home: React.FC = () => {
                             <Play size={12} className="mr-1" />
                             {content.model.contentCount || 1}
                           </span>
+                        </div>
+                      )}
+                      
+                      {/* Content Info */}
+                      {content.info && (
+                        <div className="absolute top-2 right-2 flex flex-col gap-1">
+                          {content.info.images && content.info.images > 0 && (
+                            <span className="px-2 py-1 bg-blue-500/80 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center">
+                              <ImageIcon size={10} className="mr-1" />
+                              {content.info.images}
+                            </span>
+                          )}
+                          {content.info.videos && content.info.videos > 0 && (
+                            <span className="px-2 py-1 bg-red-500/80 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center">
+                              <Video size={10} className="mr-1" />
+                              {content.info.videos}
+                            </span>
+                          )}
+                          {content.info.size && content.info.size > 0 && (
+                            <span className="px-2 py-1 bg-green-500/80 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center">
+                              <HardDrive size={10} className="mr-1" />
+                              {formatFileSize(content.info.size)}
+                            </span>
+                          )}
                         </div>
                       )}
                       

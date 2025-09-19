@@ -119,10 +119,15 @@ router.get('/', async (req, res) => {
 // Criar novo modelo
 router.post('/', async (req, res) => {
   try {
-    const modelData = {
+    let modelData = {
       ...req.body,
       slug: generateReadableSlug(req.body.name),
     };
+    
+    // Processar birthDate se fornecido
+    if (modelData.birthDate) {
+      modelData.birthDate = new Date(modelData.birthDate);
+    }
 
     const newModel = await Model.create(modelData);
     res.status(201).json(newModel);
@@ -182,7 +187,21 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Modelo não encontrado' });
     }
 
-    await model.update(req.body);
+    const updateData = { ...req.body };
+    
+    // Processar birthDate se fornecido
+    if (updateData.birthDate) {
+      updateData.birthDate = new Date(updateData.birthDate);
+    }
+    
+    await model.update(updateData);
+    
+    // Processar birthDate se fornecido
+    if (updateData.birthDate) {
+      updateData.birthDate = new Date(updateData.birthDate);
+    }
+    
+    await model.update(updateData);
     res.json(model);
   } catch (error) {
     console.error('Erro ao atualizar modelo:', error);

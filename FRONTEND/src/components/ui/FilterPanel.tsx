@@ -15,61 +15,52 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onClose,
   isOpen = true 
 }) => {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    ethnicity: true,
-    physical: false,
-    age: false
-  });
-
   const ethnicities = [
-    { value: 'arab', label: 'Arab', emoji: '🏺' },
-    { value: 'asian', label: 'Asian', emoji: '🏮' },
-    { value: 'ebony', label: 'Ebony', emoji: '🌍' },
-    { value: 'indian', label: 'Indian', emoji: '🕌' },
-    { value: 'latina', label: 'Latina', emoji: '🌶️' },
-    { value: 'white', label: 'White', emoji: '❄️' }
+    { value: '', label: 'All Ethnicities' },
+    { value: 'arab', label: 'Arab' },
+    { value: 'asian', label: 'Asian' },
+    { value: 'ebony', label: 'Ebony' },
+    { value: 'indian', label: 'Indian' },
+    { value: 'latina', label: 'Latina' },
+    { value: 'white', label: 'White' }
   ];
 
   const hairColors = [
-    { value: 'Blonde', emoji: '👱‍♀️' },
-    { value: 'Brunette', emoji: '👩‍🦱' },
-    { value: 'Black', emoji: '👩‍🦲' },
-    { value: 'Red', emoji: '👩‍🦰' },
-    { value: 'Auburn', emoji: '🔥' },
-    { value: 'Gray', emoji: '👵' },
-    { value: 'Other', emoji: '🎨' }
+    { value: '', label: 'All Hair Colors' },
+    { value: 'Blonde', label: 'Blonde' },
+    { value: 'Brunette', label: 'Brunette' },
+    { value: 'Black', label: 'Black' },
+    { value: 'Red', label: 'Red' },
+    { value: 'Auburn', label: 'Auburn' },
+    { value: 'Gray', label: 'Gray' },
+    { value: 'Other', label: 'Other' }
   ];
 
   const eyeColors = [
-    { value: 'Blue', emoji: '💙' },
-    { value: 'Brown', emoji: '🤎' },
-    { value: 'Green', emoji: '💚' },
-    { value: 'Hazel', emoji: '🌰' },
-    { value: 'Gray', emoji: '🩶' },
-    { value: 'Amber', emoji: '🟡' },
-    { value: 'Other', emoji: '👁️' }
+    { value: '', label: 'All Eye Colors' },
+    { value: 'Blue', label: 'Blue' },
+    { value: 'Brown', label: 'Brown' },
+    { value: 'Green', label: 'Green' },
+    { value: 'Hazel', label: 'Hazel' },
+    { value: 'Gray', label: 'Gray' },
+    { value: 'Amber', label: 'Amber' },
+    { value: 'Other', label: 'Other' }
   ];
 
   const bodyTypes = [
-    { value: 'Slim', emoji: '🪶' },
-    { value: 'Athletic', emoji: '💪' },
-    { value: 'Average', emoji: '👤' },
-    { value: 'Curvy', emoji: '🍑' },
-    { value: 'Plus Size', emoji: '🤗' },
-    { value: 'Muscular', emoji: '🏋️‍♀️' }
+    { value: '', label: 'All Body Types' },
+    { value: 'Slim', label: 'Slim' },
+    { value: 'Athletic', label: 'Athletic' },
+    { value: 'Average', label: 'Average' },
+    { value: 'Curvy', label: 'Curvy' },
+    { value: 'Plus Size', label: 'Plus Size' },
+    { value: 'Muscular', label: 'Muscular' }
   ];
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
 
   const updateFilter = (key: keyof FilterOptions, value: any) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value || undefined
     });
   };
 
@@ -90,7 +81,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <div className="bg-gradient-to-r from-primary-500/20 to-primary-600/20 px-6 py-4 border-b border-dark-100/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-primary-500/20 rounded-full flex items-center justify-center mr-3">
+            <div className="w-10 h-10 bg-primary-500/20 rounded-xl flex items-center justify-center mr-3">
               <Filter size={18} className="text-primary-400" />
             </div>
             <div>
@@ -122,206 +113,152 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <div className="p-6 space-y-6">
         {/* Ethnicity Filter */}
         <div className="space-y-3">
-          <button
-            onClick={() => toggleSection('ethnicity')}
-            className="flex items-center justify-between w-full text-left group"
+          <label className="flex items-center text-white font-semibold">
+            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-lg">🌍</span>
+            </div>
+            Ethnicity
+          </label>
+          <select
+            value={filters.ethnicity || ''}
+            onChange={(e) => updateFilter('ethnicity', e.target.value)}
+            className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary-500/20 transition-colors">
-                <span className="text-lg">🌍</span>
-              </div>
-              <span className="text-white font-semibold">Ethnicity</span>
-            </div>
-            <ChevronDown 
-              size={18} 
-              className={`text-gray-400 transition-all duration-200 ${expandedSections.ethnicity ? 'rotate-180 text-primary-400' : ''}`}
-            />
-          </button>
-          
-          {expandedSections.ethnicity && (
-            <div className="ml-11 grid grid-cols-2 gap-3">
-              {ethnicities.map(({ value, label, emoji }) => (
-                <label 
-                  key={value} 
-                  className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-200 border ${
-                    filters.ethnicity === value
-                      ? 'bg-primary-500/20 border-primary-500/50 text-primary-300'
-                      : 'bg-dark-300/30 border-dark-100/30 hover:bg-dark-300/50 text-gray-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="ethnicity"
-                    value={value}
-                    checked={filters.ethnicity === value}
-                    onChange={(e) => updateFilter('ethnicity', e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className="text-lg mr-2">{emoji}</span>
-                  <span className="text-sm font-medium">{label}</span>
-                </label>
-              ))}
-            </div>
-          )}
+            {ethnicities.map(({ value, label }) => (
+              <option key={value} value={value} className="bg-dark-300 text-white">
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Age Filter */}
+        {/* Age Range */}
         <div className="space-y-3">
-          <button
-            onClick={() => toggleSection('age')}
-            className="flex items-center justify-between w-full text-left group"
-          >
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary-500/20 transition-colors">
-                <span className="text-lg">🎂</span>
-              </div>
-              <span className="text-white font-semibold">Age Range</span>
+          <label className="flex items-center text-white font-semibold">
+            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-lg">🎂</span>
             </div>
-            <ChevronDown 
-              size={18} 
-              className={`text-gray-400 transition-all duration-200 ${expandedSections.age ? 'rotate-180 text-primary-400' : ''}`}
-            />
-          </button>
-          
-          {expandedSections.age && (
-            <div className="ml-11 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Min Age</label>
-                  <input
-                    type="number"
-                    min="18"
-                    max="65"
-                    value={filters.minAge || ''}
-                    onChange={(e) => updateFilter('minAge', e.target.value ? parseInt(e.target.value) : undefined)}
-                    className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
-                    placeholder="18"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Max Age</label>
-                  <input
-                    type="number"
-                    min="18"
-                    max="65"
-                    value={filters.maxAge || ''}
-                    onChange={(e) => updateFilter('maxAge', e.target.value ? parseInt(e.target.value) : undefined)}
-                    className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
-                    placeholder="65"
-                  />
-                </div>
-              </div>
-              
-              {/* Age Range Slider Visual */}
-              <div className="bg-dark-300/30 rounded-lg p-3">
-                <div className="flex justify-between text-xs text-gray-400 mb-2">
-                  <span>18</span>
-                  <span>65</span>
-                </div>
-                <div className="h-2 bg-dark-400 rounded-full relative">
-                  <div 
-                    className="absolute h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"
-                    style={{
-                      left: `${((filters.minAge || 18) - 18) / 47 * 100}%`,
-                      width: `${((filters.maxAge || 65) - (filters.minAge || 18)) / 47 * 100}%`
-                    }}
-                  />
-                </div>
-              </div>
+            Age Range
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Min Age</label>
+              <input
+                type="number"
+                min="18"
+                max="65"
+                value={filters.minAge || ''}
+                onChange={(e) => updateFilter('minAge', e.target.value ? parseInt(e.target.value) : undefined)}
+                className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+                placeholder="18"
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Max Age</label>
+              <input
+                type="number"
+                min="18"
+                max="65"
+                value={filters.maxAge || ''}
+                onChange={(e) => updateFilter('maxAge', e.target.value ? parseInt(e.target.value) : undefined)}
+                className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+                placeholder="65"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Physical Attributes */}
+        {/* Hair Color */}
         <div className="space-y-3">
-          <button
-            onClick={() => toggleSection('physical')}
-            className="flex items-center justify-between w-full text-left group"
+          <label className="flex items-center text-white font-semibold">
+            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-lg">💇‍♀️</span>
+            </div>
+            Hair Color
+          </label>
+          <select
+            value={filters.hairColor || ''}
+            onChange={(e) => updateFilter('hairColor', e.target.value)}
+            className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary-500/20 transition-colors">
-                <span className="text-lg">✨</span>
-              </div>
-              <span className="text-white font-semibold">Physical Attributes</span>
+            {hairColors.map(({ value, label }) => (
+              <option key={value} value={value} className="bg-dark-300 text-white">
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Eye Color */}
+        <div className="space-y-3">
+          <label className="flex items-center text-white font-semibold">
+            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-lg">👁️</span>
             </div>
-            <ChevronDown 
-              size={18} 
-              className={`text-gray-400 transition-all duration-200 ${expandedSections.physical ? 'rotate-180 text-primary-400' : ''}`}
-            />
-          </button>
-          
-          {expandedSections.physical && (
-            <div className="ml-11 space-y-4">
-              {/* Hair Color */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Hair Color</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {hairColors.map(({ value, emoji }) => (
-                    <button
-                      key={value}
-                      onClick={() => updateFilter('hairColor', filters.hairColor === value ? undefined : value)}
-                      className={`flex items-center p-2.5 rounded-lg text-sm transition-all duration-200 border ${
-                        filters.hairColor === value
-                          ? 'bg-primary-500/20 border-primary-500/50 text-primary-300'
-                          : 'bg-dark-300/30 border-dark-100/30 hover:bg-dark-300/50 text-gray-300'
-                      }`}
-                    >
-                      <span className="mr-2">{emoji}</span>
-                      <span className="font-medium">{value}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Eye Color */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Eye Color</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {eyeColors.map(({ value, emoji }) => (
-                    <button
-                      key={value}
-                      onClick={() => updateFilter('eyeColor', filters.eyeColor === value ? undefined : value)}
-                      className={`flex items-center p-2.5 rounded-lg text-sm transition-all duration-200 border ${
-                        filters.eyeColor === value
-                          ? 'bg-primary-500/20 border-primary-500/50 text-primary-300'
-                          : 'bg-dark-300/30 border-dark-100/30 hover:bg-dark-300/50 text-gray-300'
-                      }`}
-                    >
-                      <span className="mr-2">{emoji}</span>
-                      <span className="font-medium">{value}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Body Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Body Type</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {bodyTypes.map(({ value, emoji }) => (
-                    <button
-                      key={value}
-                      onClick={() => updateFilter('bodyType', filters.bodyType === value ? undefined : value)}
-                      className={`flex items-center p-2.5 rounded-lg text-sm transition-all duration-200 border ${
-                        filters.bodyType === value
-                          ? 'bg-primary-500/20 border-primary-500/50 text-primary-300'
-                          : 'bg-dark-300/30 border-dark-100/30 hover:bg-dark-300/50 text-gray-300'
-                      }`}
-                    >
-                      <span className="mr-2">{emoji}</span>
-                      <span className="font-medium">{value}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+            Eye Color
+          </label>
+          <select
+            value={filters.eyeColor || ''}
+            onChange={(e) => updateFilter('eyeColor', e.target.value)}
+            className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
+          >
+            {eyeColors.map(({ value, label }) => (
+              <option key={value} value={value} className="bg-dark-300 text-white">
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Body Type */}
+        <div className="space-y-3">
+          <label className="flex items-center text-white font-semibold">
+            <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-lg">💪</span>
             </div>
-          )}
+            Body Type
+          </label>
+          <select
+            value={filters.bodyType || ''}
+            onChange={(e) => updateFilter('bodyType', e.target.value)}
+            className="w-full px-4 py-3 bg-dark-300/50 border border-dark-100/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
+          >
+            {bodyTypes.map(({ value, label }) => (
+              <option key={value} value={value} className="bg-dark-300 text-white">
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Active Filters Summary */}
         {hasActiveFilters && (
           <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-4">
-            <h4 className="text-primary-300 font-medium mb-2 flex items-center">
+            <h4 className="text-primary-300 font-medium mb-3 flex items-center">
               <Search size={16} className="mr-2" />
               Active Filters
             </h4>

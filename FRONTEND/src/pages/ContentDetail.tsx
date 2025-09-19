@@ -16,7 +16,9 @@ import {
   Flag,
   Download,
   Play,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Video,
+  HardDrive
 } from 'lucide-react';
 import type { Content } from '../types';
 import { contentApi } from '../services/api';
@@ -194,6 +196,14 @@ const ContentDetail: React.FC = () => {
     }).format(views);
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
     const handleContentClick = (targetId: number) => {
     if (!targetId) return;
     if (String(targetId) === id) return; // evita recarregar o mesmo
@@ -259,6 +269,9 @@ if (loading) {
                           year: 'numeric'
                         })}</span>
                       </div>
+                      
+                      {/* Content Info */}
+                     
                     </div>
                   </div>
                   
@@ -311,32 +324,132 @@ if (loading) {
                 )}
 
                 {/* Mega Link Section */}
-                <div className="bg-gradient-to-r from-primary-500/10 to-primary-600/10 border border-primary-500/20 rounded-xl p-6">
-                  <div className="flex items-center mb-4">
-                    <Download size={24} className="text-primary-500 mr-3" />
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Premium Content Access</h3>
-                      <p className="text-gray-300 text-sm">Click below to access the full content</p>
+                {/* Premium Download Section - Mobile First Design */}
+                <div className="relative overflow-hidden rounded-3xl shadow-2xl min-h-[400px] md:min-h-[500px]">
+                  {/* Background Image with Blur */}
+                  {content.model?.photoUrl && (
+                    <>
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                          backgroundImage: `url(${content.model.photoUrl})`,
+                          filter: 'blur(25px)',
+                          transform: 'scale(1.2)'
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-primary-900/80 to-black/90" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                    </>
+                  )}
+                  
+                  {/* Content */}
+                  <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
+                    {/* Top Section - Model Info */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden ring-4 ring-white/20 shadow-xl">
+                          <img
+                            src={content.model?.photoUrl}
+                            alt={content.model?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
+                            {content.model?.name}
+                          </h3>
+                          <p className="text-white/80 text-sm md:text-base">Exclusive Content</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20">
+                        <div className="flex items-center text-white">
+                          <Eye size={16} className="mr-2 text-primary-400" />
+                          <span className="font-bold">{formatViews(content.views)}</span>
+                        </div>
+                      </div>
                     </div>
+
+                                        <div className="space-y-4">
+                      <div className="text-center">
+                        <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary-400 to-primary-600 rounded-3xl shadow-2xl mb-4 ring-4 ring-primary-500/30">
+                          <Download size={28} className="text-white" />
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                          Download
+                        </h3>
+                        <p className="text-white/80 text-base md:text-lg">
+                          Unlock exclusive content now
+                        </p>
+                      </div>
+                      
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        onClick={handleMegaLinkClick}
+                        data-mega-url={content.url}
+                        className="group relative overflow-hidden bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 backdrop-blur-md border-2 border-white/30 hover:border-white/50 text-white font-bold text-lg md:text-xl py-4 md:py-5 shadow-2xl hover:shadow-primary-500/25 transition-all duration-300"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <span className="relative flex items-center justify-center">
+                          <ExternalLink size={24} className="mr-3 transition-transform duration-300 group-hover:translate-x-1 group-hover:scale-110" />
+                          <span className="hidden sm:inline">Download Now</span>
+                          <span className="sm:hidden">Download Now</span>
+                        </span>
+                      </Button>
+                      
+                      <div className="text-center">
+                        <div className="inline-flex items-center space-x-4 text-white/70 text-sm">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
+                            <span>Secure Download</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full mr-2" />
+                            <span>18+ Content</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full mr-2" />
+                            <span>Premium Quality</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Middle Section - Content Info */}
+                    {content.info && (
+                      <div className="mt-8">
+                        <h4 className="text-white/90 text-sm font-medium mb-4 text-center">Package Contents</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {content.info.images && content.info.images > 0 && (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20 hover:bg-white/15 transition-all">
+                              <ImageIcon size={28} className="text-blue-400 mx-auto mb-2" />
+                              <div className="text-white font-bold text-xl">{content.info.images}</div>
+                              <div className="text-white/70 text-sm">High-Res Images</div>
+                            </div>
+                          )}
+                          {content.info.videos && content.info.videos > 0 && (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20 hover:bg-white/15 transition-all">
+                              <Video size={28} className="text-red-400 mx-auto mb-2" />
+                              <div className="text-white font-bold text-xl">{content.info.videos}</div>
+                              <div className="text-white/70 text-sm">HD Videos</div>
+                            </div>
+                          )}
+                          {content.info.size && content.info.size > 0 && (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20 hover:bg-white/15 transition-all">
+                              <HardDrive size={28} className="text-green-400 mx-auto mb-2" />
+                              <div className="text-white font-bold text-xl">{formatFileSize(content.info.size)}</div>
+                              <div className="text-white/70 text-sm">Total Size</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Bottom Section - Download Button */}
+
                   </div>
-                  
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    onClick={handleMegaLinkClick}
-                    data-mega-url={content.url}
-                    className="group"
-                  >
-                    <span className="flex items-center justify-center">
-                      <ExternalLink size={20} className="mr-2 transition-transform duration-300 group-hover:translate-x-1" />
-                      Mega Link
-                    </span>
-                  </Button>
-                  
-                  <p className="text-xs text-gray-500 text-center mt-3">
-                    By accessing this content, you confirm you are 18+ and accept our terms.
-                  </p>
                 </div>
                 
                 {/* Like Button */}

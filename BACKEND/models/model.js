@@ -73,8 +73,37 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true,
     },
+    sexuality: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    boobsType: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    cupSize: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    birthDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     timestamps: true,
+    getterMethods: {
+      age() {
+        if (!this.birthDate) return null;
+        const today = new Date();
+        const birthDate = new Date(this.birthDate);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age;
+      }
+    }
   });
 
   Model.associate = function(models) {

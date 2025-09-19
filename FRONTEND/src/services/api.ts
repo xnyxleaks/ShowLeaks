@@ -293,4 +293,21 @@ export const likesApi = {
   }
 };
 
+// Admin API
+export const adminApi = {
+  getStats: async () => {
+    const response = await api.get('/admin/stats');
+    return response.data;
+  },
+  
+  getUserAnalytics: async (period = '30') => {
+    const response = await api.get('/admin/users/analytics', { params: { period } });
+    return response.data;
+  },
+  
+  getContentAnalytics: async () => {
+    const response = await api.get('/admin/content/analytics');
+    return response.data;
+  }
+};
 export default api;

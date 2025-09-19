@@ -11,6 +11,16 @@ export interface Model {
   weight?: number;
   age?: number;
   birthPlace?: string;
+  placeOfBirth?: string;
+  sexuality?: string;
+  boobsType?: string;
+  cupSize?: string;
+  birthDate?: string;
+  placeOfBirth?: string;
+  sexuality?: string;
+  boobsType?: string;
+  cupSize?: string;
+  birthDate?: string;
   ethnicity?: 'arab' | 'asian' | 'ebony' | 'indian' | 'latina' | 'white';
   orientation?: string;
   tags: string[];
@@ -34,6 +44,11 @@ export interface Content {
   status: 'active' | 'broken' | 'reported' | 'removed';
   language: string;
   isActive: boolean;
+  info?: {
+    images?: number;
+    videos?: number;
+    size?: number;
+  };
   createdAt: string;
   updatedAt: string;
   model?: Model;
@@ -102,6 +117,7 @@ export interface FilterOptions {
   hairColor?: string;
   eyeColor?: string;
   bodyType?: string;
+ type?: string;
   tags?: string[];
   search?: string;
 }

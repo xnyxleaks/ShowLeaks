@@ -227,7 +227,10 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
     type: content?.type || 'image',
     tags: content?.tags?.join(', ') || '',
     modelId: content?.modelId || '',
-    modelSearch: content?.model?.name || ''
+    modelSearch: content?.model?.name || '',
+    images: content?.info?.images || '',
+    videos: content?.info?.videos || '',
+    size: content?.info?.size || ''
   });
   const [loading, setLoading] = useState(false);
   const [modelSuggestions, setModelSuggestions] = useState<Model[]>([]);
@@ -274,7 +277,12 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
         thumbnailUrl: formData.thumbnailUrl || undefined,
         type: formData.type as 'video' | 'image' | 'gallery',
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-        modelId: parseInt(formData.modelId)
+        modelId: parseInt(formData.modelId),
+        info: {
+          images: formData.images ? parseInt(formData.images) : undefined,
+          videos: formData.videos ? parseInt(formData.videos) : undefined,
+          size: formData.size ? parseInt(formData.size) : undefined
+        }
       };
 
       if (content) {
@@ -408,6 +416,88 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
               placeholder="tag1, tag2, tag3"
               className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Images Count
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.images}
+                onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Videos Count
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.videos}
+                onChange={(e) => setFormData({ ...formData, videos: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Size (bytes)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.size}
+                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Images Count
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.images}
+                onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Videos Count
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.videos}
+                onChange={(e) => setFormData({ ...formData, videos: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Size (bytes)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.size}
+                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

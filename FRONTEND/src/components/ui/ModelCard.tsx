@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, MapPin, Calendar } from 'lucide-react';
+import { Eye, MapPin, Calendar, Star, Heart, Video, Camera, Zap, Music, Users, Crown } from 'lucide-react';
 import type { Model } from '../../types';
 import { linkvertise } from '../Linkvertise/Linkvertise';
 import { useAuthStore } from '../../store/authStore';
@@ -36,7 +36,50 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
     };
     return ethnicity ? labels[ethnicity as keyof typeof labels] : '';
   };
-//
+
+  const getTagIcon = (tag: string) => {
+    const iconMap: { [key: string]: JSX.Element } = {
+      'PROFESSION_INFLUENCER': <Star size={12} className="text-yellow-500" />,
+      'PROFESSION_PORN_STAR': <Crown size={12} className="text-red-500" />,
+      'PROFESSION_TIKTOK_STAR': <Music size={12} className="text-pink-500" />,
+      'PROFESSION_COSPLAYER': <Users size={12} className="text-purple-500" />,
+      'PROFESSION_CHEERLEADER': <Star size={12} className="text-blue-500" />,
+      'PROFESSION_GAMER': <Zap size={12} className="text-green-500" />,
+      'CATEGORY_MASTURBATION': <Heart size={12} className="text-red-400" />,
+      'CATEGORY_KISSING': <Heart size={12} className="text-pink-400" />,
+      'CATEGORY_BOOBS_TOUCHING': <Heart size={12} className="text-orange-400" />,
+      'CATEGORY_BOOBS_LICKING': <Heart size={12} className="text-red-400" />,
+      'CATEGORY_FINGERING': <Heart size={12} className="text-purple-400" />,
+      'CATEGORY_DILDO': <Zap size={12} className="text-blue-400" />,
+      'CATEGORY_ORAL': <Heart size={12} className="text-green-400" />,
+      'CATEGORY_BLOWJOB': <Heart size={12} className="text-indigo-400" />,
+      'CATEGORY_VAGINAL': <Heart size={12} className="text-pink-400" />,
+      'CATEGORY_DILDO_BLOWJOB': <Zap size={12} className="text-cyan-400" />
+    };
+    return iconMap[tag] || <Star size={12} className="text-gray-400" />;
+  };
+
+  const formatTagName = (tag: string) => {
+    return tag
+      .replace('PROFESSION_', '')
+      .replace('CATEGORY_', '')
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   return (
     <Link
       to={`/model/${model.slug}`} 
@@ -66,17 +109,36 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
           </h3>
           
           <div className="space-y-1 mb-3">
-            {model.age && (
+            {model.birthDate && (
               <div className="flex items-center text-xs text-gray-300">
                 <Calendar size={12} className="mr-1 text-primary-500" />
-                <span>{model.age} years old</span>
+                <span>{calculateAge(model.birthDate)} years old</span>
               </div>
             )}
             
-            {model.birthPlace && (
+            {model.placeOfBirth && (
               <div className="flex items-center text-xs text-gray-300">
                 <MapPin size={12} className="mr-1 text-primary-500" />
-                <span>{model.birthPlace}</span>
+                <span>{model.placeOfBirth}</span>
+              </div>
+            )}
+            
+            {/* Tags com ícones */}
+            {model.tags && model.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {model.tags.slice(0, 3).map((tag, index) => (
+                  <div key={index} className="flex items-center bg-dark-300/50 px-2 py-1 rounded-full">
+                    {getTagIcon(tag)}
+                    <span className="text-xs text-gray-300 ml-1">
+                      {formatTagName(tag)}
+                    </span>
+                  </div>
+                ))}
+                {model.tags.length > 3 && (
+                  <div className="flex items-center bg-dark-300/50 px-2 py-1 rounded-full">
+                    <span className="text-xs text-gray-400">+{model.tags.length - 3}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

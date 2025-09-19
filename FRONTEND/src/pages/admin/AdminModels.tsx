@@ -226,6 +226,11 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
     bodyType: model?.bodyType || '',
     bustSize: model?.bustSize || '',
     birthPlace: model?.birthPlace || '',
+    placeOfBirth: model?.placeOfBirth || '',
+    sexuality: model?.sexuality || '',
+    boobsType: model?.boobsType || '',
+    cupSize: model?.cupSize || '',
+    birthDate: model?.birthDate ? new Date(model.birthDate).toISOString().split('T')[0] : '',
     ethnicity: model?.ethnicity || '',
     orientation: model?.orientation || '',
     tags: model?.tags?.join(', ') || ''
@@ -242,6 +247,7 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
         age: formData.age ? parseInt(formData.age) : undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
         weight: formData.weight ? parseInt(formData.weight) : undefined,
+        birthDate: formData.birthDate ? formData.birthDate : undefined,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       };
 
@@ -312,6 +318,18 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
+                Birth Date
+              </label>
+              <input
+                type="date"
+                value={formData.birthDate}
+                onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Ethnicity
               </label>
               <select
@@ -327,6 +345,30 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
                 <option value="latina">Latina</option>
                 <option value="white">White</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Place of Birth
+              </label>
+              <input
+                type="text"
+                value={formData.placeOfBirth}
+                onChange={(e) => setFormData({ ...formData, placeOfBirth: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Sexuality
+              </label>
+              <input
+                type="text"
+                value={formData.sexuality}
+                onChange={(e) => setFormData({ ...formData, sexuality: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
             </div>
 
             <div>
@@ -349,6 +391,42 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
                 type="text"
                 value={formData.eyeColor}
                 onChange={(e) => setFormData({ ...formData, eyeColor: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Body Type
+              </label>
+              <input
+                type="text"
+                value={formData.bodyType}
+                onChange={(e) => setFormData({ ...formData, bodyType: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Boobs Type
+              </label>
+              <input
+                type="text"
+                value={formData.boobsType}
+                onChange={(e) => setFormData({ ...formData, boobsType: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Cup Size
+              </label>
+              <input
+                type="text"
+                value={formData.cupSize}
+                onChange={(e) => setFormData({ ...formData, cupSize: e.target.value })}
                 className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>

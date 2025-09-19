@@ -139,7 +139,24 @@ router.get('/model/:modelId', async (req, res) => {
 // Criar novo conteúdo
 router.post('/', async (req, res) => {
   try {
-    const newContent = await Content.create(req.body);
+    const contentData = { ...req.body };
+    
+    // Validar e processar info se fornecido
+    if (contentData.info) {
+      const { images, videos, size } = contentData.info;
+      contentData.info = {};
+      
+      if (images && images > 0) contentData.info.images = parseInt(images);
+      if (videos && videos > 0) contentData.info.videos = parseInt(videos);
+      if (size && size > 0) contentData.info.size = parseInt(size);
+      
+      // Se info está vazio, definir como null
+      if (Object.keys(contentData.info).length === 0) {
+        contentData.info = null;
+      }
+    }
+    
+    const newContent = await Content.create(contentData);
     res.status(201).json(newContent);
   } catch (error) {
     console.error('Erro ao criar conteúdo:', error);
@@ -259,7 +276,39 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Conteúdo não encontrado' });
     }
 
-    await content.update(req.body);
+    const updateData = { ...req.body };
+    
+    // Processar info se fornecido
+    if (updateData.info) {
+      const { images, videos, size } = updateData.info;
+      updateData.info = {};
+      
+      if (images && images > 0) updateData.info.images = parseInt(images);
+      if (videos && videos > 0) updateData.info.videos = parseInt(videos);
+      if (size && size > 0) updateData.info.size = parseInt(size);
+      
+      if (Object.keys(updateData.info).length === 0) {
+        updateData.info = null;
+      }
+    }
+    
+    await content.update(updateData);
+    
+    // Processar info se fornecido
+    if (updateData.info) {
+      const { images, videos, size } = updateData.info;
+      updateData.info = {};
+      
+      if (images && images > 0) updateData.info.images = parseInt(images);
+      if (videos && videos > 0) updateData.info.videos = parseInt(videos);
+      if (size && size > 0) updateData.info.size = parseInt(size);
+      
+      if (Object.keys(updateData.info).length === 0) {
+        updateData.info = null;
+      }
+    }
+    
+    await content.update(updateData);
     res.json(content);
   } catch (error) {
     console.error('Erro ao atualizar conteúdo:', error);

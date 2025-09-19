@@ -136,7 +136,7 @@ const Models: React.FC = () => {
           <div className="container mx-auto px-4">
             {/* Search and Filters */}
             <div className="mb-8">
-              <div className="flex flex-col lg:flex-row gap-6 mb-8">
+              <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <SearchInput
                     value={searchQuery}
@@ -144,47 +144,79 @@ const Models: React.FC = () => {
                     placeholder="Search models by name..."
                   />
                 </div>
-                
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`px-6 py-3 rounded-xl flex items-center transition-all duration-200 font-medium ${
-                      showFilters || hasActiveFilters
-                        ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
-                        : 'bg-dark-200 text-gray-400 hover:bg-dark-100 hover:text-white'
-                    }`}
-                  >
-                    <Filter size={18} className="mr-2" />
-                    Advanced Filters
-                    {hasActiveFilters && (
-                      <span className="ml-2 bg-white/20 text-xs px-2 py-1 rounded-full font-bold">
-                        {Object.keys(filters).filter(key => filters[key as keyof FilterOptions]).length}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {(searchQuery || hasActiveFilters) && (
-                    <button
-                      onClick={clearSearch}
-                      className="px-4 py-3 text-gray-400 hover:text-white hover:bg-dark-200 rounded-xl transition-all duration-200"
-                      title="Clear all filters"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                </div>
               </div>
               
-              {/* Filter Panel */}
-              {showFilters && (
-                <div className="mb-8">
-                  <FilterPanel
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    onClose={() => setShowFilters(false)}
-                  />
-                </div>
-              )}
+              {/* Inline Filters */}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+                <select
+                  value={filters.ethnicity || ''}
+                  onChange={(e) => setFilters({ ...filters, ethnicity: e.target.value || undefined })}
+                  className="px-4 py-2 bg-dark-200 border border-dark-100 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">🌍 All Ethnicities</option>
+                  <option value="arab">🏺 Arab</option>
+                  <option value="asian">🏮 Asian</option>
+                  <option value="ebony">🌟 Ebony</option>
+                  <option value="indian">🪔 Indian</option>
+                  <option value="latina">🌶️ Latina</option>
+                  <option value="white">❄️ White</option>
+                </select>
+
+                <select
+                  value={filters.hairColor || ''}
+                  onChange={(e) => setFilters({ ...filters, hairColor: e.target.value || undefined })}
+                  className="px-4 py-2 bg-dark-200 border border-dark-100 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">💇‍♀️ Hair Color</option>
+                  <option value="Blonde">👱‍♀️ Blonde</option>
+                  <option value="Brunette">👩‍🦱 Brunette</option>
+                  <option value="Black">🖤 Black</option>
+                  <option value="Red">🔥 Red</option>
+                  <option value="Auburn">🍂 Auburn</option>
+                </select>
+
+                <select
+                  value={filters.bodyType || ''}
+                  onChange={(e) => setFilters({ ...filters, bodyType: e.target.value || undefined })}
+                  className="px-4 py-2 bg-dark-200 border border-dark-100 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">💪 Body Type</option>
+                  <option value="Slim">🌟 Slim</option>
+                  <option value="Athletic">💪 Athletic</option>
+                  <option value="Average">⚖️ Average</option>
+                  <option value="Curvy">🍑 Curvy</option>
+                  <option value="Plus Size">💖 Plus Size</option>
+                </select>
+
+                <input
+                  type="number"
+                  min="18"
+                  max="65"
+                  value={filters.minAge || ''}
+                  onChange={(e) => setFilters({ ...filters, minAge: e.target.value ? parseInt(e.target.value) : undefined })}
+                  placeholder="🎂 Min Age"
+                  className="px-4 py-2 bg-dark-200 border border-dark-100 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+
+                <input
+                  type="number"
+                  min="18"
+                  max="65"
+                  value={filters.maxAge || ''}
+                  onChange={(e) => setFilters({ ...filters, maxAge: e.target.value ? parseInt(e.target.value) : undefined })}
+                  placeholder="🎂 Max Age"
+                  className="px-4 py-2 bg-dark-200 border border-dark-100 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+
+                {(searchQuery || hasActiveFilters) && (
+                  <button
+                    onClick={clearSearch}
+                    className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all duration-200 border border-red-500/30 text-sm font-medium"
+                  >
+                    ✕ Clear
+                  </button>
+                )}
+              </div>
               
               {/* Results Info and Sort */}
               <div className="flex flex-col sm:flex-row justify-between items-center">

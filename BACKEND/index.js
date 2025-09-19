@@ -64,6 +64,7 @@ const billingRouter = require('./routes/Billing');
 const commentsRouter = require('./routes/comments');
 const likesRouter = require('./routes/likes');
 const { router: notificationsRouter } = require('./routes/notifications');
+const adminRouter = require('./routes/admin');
 
 app.use('/auth', authRouter);
 app.use('/age-verification', ageVerificationRouter);
@@ -78,6 +79,7 @@ app.use('/billing', billingRouter);
 app.use('/comments', commentsRouter);
 app.use('/likes', likesRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/admin', adminRouter);
 
 // Rota de saúde
 app.get('/health', (req, res) => {

@@ -50,6 +50,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true,
     },
+    info: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Contains images count, videos count, and size in bytes'
+    }
   }, {
     timestamps: true,
   });
@@ -65,7 +71,15 @@ module.exports = (sequelize, DataTypes) => {
     });
     Content.hasMany(models.UserHistory, {
       foreignKey: 'contentId',
-      as: 'userHistories'
+      as: 'histories'
+    });
+    Content.hasMany(models.Comment, {
+      foreignKey: 'contentId',
+      as: 'comments'
+    });
+    Content.hasMany(models.Like, {
+      foreignKey: 'contentId',
+      as: 'likes'
     });
   };
 
