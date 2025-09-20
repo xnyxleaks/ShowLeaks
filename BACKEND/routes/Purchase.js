@@ -5,45 +5,30 @@ const { User } = require('../models');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 router.post('/', authMiddleware, async (req, res) => {
-    const email = req.user.email; 
+  const email = req.user.email;
 
-    try {
-        const user = await User.findOne({ where: { email } });
-
-        if (!user) {
-            return res.status(403).json({ error: 'Este e-mail não está autorizado para pagamento.' });
-        }
-
-        const prices = {
-            monthly: process.env.STRIPE_PRICEID_MONTHLY,
-        };
-
-const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  customer_email: email,
-  line_items: [
-    {
-      price: prices,
-      quantity: 1,
-    },
-  ],
-  mode: 'payment',
-  success_url: `${process.env.FRONTEND_URL}/success`,
-  cancel_url: `${process.env.FRONTEND_URL}/cancel`,
-});
-
-          
-
-        res.json({ url: session.url });
-
-        if(success_url){
-          const updatePremium =  await User.findOne({ where: { email } });
-        }
-
-      } catch (error) {
-        console.error('Erro ao criar sessão de checkout:', error.message, error.stack);
-        res.status(500).json({ error: 'Erro ao criar sessão de checkout' });
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(403).json({ error: 'Este e-mail não está autorizado para pagamento.' });
     }
+
+    // price_id deve ser uma string do tipo "price_..."
+    const priceId = process.env.STRIPE_PRICEID_MONTHLY;
+
+    const session = await stripe.checkout.sessions.create({
+      customer_email: email,
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'subscription',
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (error) {
+    console.error('Erro ao criar sessão de checkout:', error.message, error.stack);
+    return res.status(500).json({ error: 'Erro ao criar sessão de checkout' });
+  }
 });
 
 module.exports = router;
