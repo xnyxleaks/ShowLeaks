@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, X, ArrowLeft, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Button from '../ui/Button';
+import AlertModal from '../ui/AlertModal';
+import { useAlert } from '../../hooks/useAlert';
 import { useAuthStore } from '../../store/authStore';
 
 interface AuthModalProps {
@@ -18,6 +20,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [showEmailReminder, setShowEmailReminder] = useState(false);
+  const { alert, showError, showSuccess, hideAlert } = useAlert();
   const { login, register, forgotPassword, loading, error } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,10 +28,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       if (mode === 'login') {
         await login({ email, password });
+        showSuccess('Login Successful', 'Welcome back! You have been successfully logged in.');
         onClose();
       } else if (mode === 'register') {
         if (!ageConfirmed) {
-          alert('You must confirm that you are 18 years or older');
+          showError('Age Confirmation Required', 'You must confirm that you are 18 years or older to create an account.');
           return;
         }
         await register({ name, email, password, ageConfirmed });
@@ -38,7 +42,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setMode('email-sent');
       }
     } catch (error) {
-      // Error is handled by the store
+      const errorMessage = (error as any)?.response?.data?.error || 'An unexpected error occurred';
+      showError('Authentication Error', errorMessage);
     }
   };
 
@@ -253,6 +258,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </>
         )}
       </div>
+      
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={hideAlert}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
     </div>
   );
 };

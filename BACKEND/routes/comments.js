@@ -54,7 +54,18 @@ router.get('/', async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'isPremium', 'isAdmin']
+          attributes: ['id', 'name', 'isPremium', 'isAdmin', 'profilePhoto']
+        },
+        {
+          model: Comment,
+          as: 'replies',
+          where: { isActive: true },
+          required: false,
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'isPremium', 'isAdmin', 'profilePhoto']
+          }]
         }
       ]
     });
@@ -101,7 +112,7 @@ router.get('/', async (req, res) => {
 // Criar comentário
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { contentId, modelId, text } = req.body;
+    const { contentId, modelId, text, parentId } = req.body;
     const userId = req.user.id;
 
     if (!text || text.trim().length === 0) {
@@ -116,6 +127,7 @@ router.post('/', authMiddleware, async (req, res) => {
       userId,
       contentId,
       modelId,
+      parentId,
       text: text.trim()
     });
 
@@ -123,7 +135,7 @@ router.post('/', authMiddleware, async (req, res) => {
       include: [{
         model: User,
         as: 'user',
-        attributes: ['id', 'name', 'isPremium', 'isAdmin']
+        attributes: ['id', 'name', 'isPremium', 'isAdmin', 'profilePhoto']
       }]
     });
 

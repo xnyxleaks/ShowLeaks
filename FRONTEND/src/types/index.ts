@@ -145,6 +145,7 @@ export interface Comment {
   userId: number;
   contentId?: number;
   modelId?: number;
+  parentId?: number;
   text: string;
   likes: number;
   isLiked: boolean;
@@ -156,7 +157,9 @@ export interface Comment {
     name: string;
     isPremium: boolean;
     isAdmin: boolean;
+    profilePhoto?: string;
   };
+  replies?: Comment[];
 }
 
 export interface Like {
@@ -179,4 +182,16 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Recommendation {
+  id: number;
+  userId: number;
+  modelId: number;
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+  model?: Model;
+  user?: User;
 }

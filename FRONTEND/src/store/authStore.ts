@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   
       set({ user, loading: false });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      const errorMessage = (error as any)?.response?.data?.error || 'Login failed. Please check your credentials.';
       set({ error: errorMessage, loading: false });
       throw error;
     }
@@ -54,9 +54,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       sessionStorage.setItem('user', JSON.stringify(user));
       
       set({ user, loading: false });
-      set({ loading: false, error: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      const errorMessage = (error as any)?.response?.data?.error || 'Registration failed. Please try again.';
       set({ error: errorMessage, loading: false });
       throw error;
     }

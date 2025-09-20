@@ -21,6 +21,13 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
+    parentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: 'Comments', key: 'id' },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    },
     text: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -44,6 +51,8 @@ module.exports = (sequelize, DataTypes) => {
     Comment.belongsTo(models.User,   { foreignKey: 'userId',   as: 'user' });
     Comment.belongsTo(models.Content,{ foreignKey: 'contentId',as: 'content' });
     Comment.belongsTo(models.Model,  { foreignKey: 'modelId',  as: 'model' });
+    Comment.belongsTo(models.Comment,{ foreignKey: 'parentId', as: 'parent' });
+    Comment.hasMany(models.Comment,  { foreignKey: 'parentId', as: 'replies' });
     Comment.hasMany(models.CommentLike,{ foreignKey: 'commentId', as: 'commentLikes' });
   };
 

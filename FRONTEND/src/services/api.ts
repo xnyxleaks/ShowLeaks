@@ -175,6 +175,16 @@ export const authApi = {
     return response.data;
   },
   
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const response = await api.put('/auth/change-password', { currentPassword, newPassword });
+    return response.data;
+  },
+  
+  deleteAccount: async (password: string) => {
+    const response = await api.delete('/auth/account', { data: { password } });
+    return response.data;
+  },
+  
   uploadProfilePhoto: async (file: File) => {
     const formData = new FormData();
     formData.append('photo', file);
@@ -310,4 +320,18 @@ export const adminApi = {
     return response.data;
   }
 };
+
+// Recommendations API
+export const recommendationsApi = {
+  create: async (data: { modelId: number; description: string }) => {
+    const response = await api.post('/recommendations', data);
+    return response.data;
+  },
+  
+  getRemainingCount: async () => {
+    const response = await api.get('/recommendations/remaining');
+    return response.data;
+  }
+};
+
 export default api;

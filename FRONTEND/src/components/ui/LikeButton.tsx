@@ -43,17 +43,23 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     if (!user || loading) return;
 
     setLoading(true);
+    const previousState = { likes, isLiked };
+    
+    // Optimistic update
+    setIsLiked(!isLiked);
+    setLikes(prev => isLiked ? prev - 1 : prev + 1);
+    
     try {
       await likesApi.toggle({
         contentId,
         modelId,
         type
       });
-
-      setIsLiked(!isLiked);
-      setLikes(prev => isLiked ? prev - 1 : prev + 1);
     } catch (error) {
       console.error('Error toggling like:', error);
+      // Revert optimistic update on error
+      setIsLiked(previousState.isLiked);
+      setLikes(previousState.likes);
     } finally {
       setLoading(false);
     }

@@ -67,10 +67,12 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onClose }) => {
       
       // Notificar outros componentes sobre a mudança
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: langCode }));
+      
+      // Force page reload to apply language changes
+      window.location.reload();
     } catch (error) {
       console.error('Error changing language:', error);
     }
-    onClose();
   };
 
   if (loading) {

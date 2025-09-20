@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Button from '../components/ui/Button';
+import AlertModal from '../components/ui/AlertModal';
+import { useAlert } from '../hooks/useAlert';
 import { Lock, Star, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
 const Premium: React.FC = () => {
-
-
   const [isPremium, setIspremium] = useState<boolean>(false)
+  const { alert, showError, showSuccess, hideAlert } = useAlert();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,7 +21,7 @@ const Premium: React.FC = () => {
   
     const Handlepurchase = async () => {
       if (!token) {
-        alert('You need logged');
+        showError('Authentication Required', 'You need to be logged in to purchase premium.');
         return;
       }
       
@@ -35,7 +36,7 @@ const Premium: React.FC = () => {
       );
       
       if (!response.data.isVerified) {
-        alert('You need to verify your email before purchasing premium. Please check your inbox.');
+        showError('Email Verification Required', 'You need to verify your email before purchasing premium. Please check your inbox.');
         return;
       }
     
@@ -44,7 +45,7 @@ const Premium: React.FC = () => {
         const email = response.data.email;
     
         if (isPremium) {
-          alert('You are already Premium');
+          showSuccess('Already Premium', 'You already have an active premium subscription.');
           return;
         }
         
@@ -65,7 +66,7 @@ const Premium: React.FC = () => {
         const { url } = paymentResponse.data;
         window.open(url, "_blank");
       } catch (err) {
-        alert('Error starting purchase');
+        showError('Purchase Error', 'Failed to start the purchase process. Please try again.');
       }
     };
     
@@ -135,6 +136,18 @@ const Premium: React.FC = () => {
           </div>
         </div>
       </section>
+      
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={hideAlert}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
     </main>
   );
 };

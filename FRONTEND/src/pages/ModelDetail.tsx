@@ -113,7 +113,6 @@ const ModelDetail: React.FC = () => {
       try { await navigator.share(shareData); } catch { /* cancelado */ }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
     }
     setShowDropdown(false);
   };

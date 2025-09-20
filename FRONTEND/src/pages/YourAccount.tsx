@@ -18,15 +18,27 @@ import {
   CheckCircle,
   XCircle,
   Camera,
-  Upload
+  Upload,
+  Lock,
+  Trash2,
+  Star
 } from 'lucide-react';
 import Button from '../components/ui/Button';
+import ChangePasswordModal from '../components/ui/ChangePasswordModal';
+import DeleteAccountModal from '../components/ui/DeleteAccountModal';
+import RecommendContentModal from '../components/ui/RecommendContentModal';
+import AlertModal from '../components/ui/AlertModal';
+import { useAlert } from '../hooks/useAlert';
 
 const YourAccount: React.FC = () => {
   const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [showRecommendContent, setShowRecommendContent] = useState(false);
+  const { alert, showError, showSuccess, hideAlert } = useAlert();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     language: user?.language || 'en',
@@ -46,10 +58,10 @@ const YourAccount: React.FC = () => {
       await authApi.updateProfile(formData);
       updateUser(formData);
       setIsEditing(false);
-      alert('Perfil atualizado com sucesso!');
+      showSuccess('Profile Updated', 'Your profile has been successfully updated.');
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Erro ao atualizar perfil');
+      showError('Update Failed', 'Failed to update your profile. Please try again.');
     }
   };
 
@@ -59,13 +71,13 @@ const YourAccount: React.FC = () => {
 
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem');
+      showError('Invalid File Type', 'Please select only image files.');
       return;
     }
 
     // Validar tamanho (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB');
+      showError('File Too Large', 'Image must be no larger than 5MB.');
       return;
     }
 
@@ -78,15 +90,22 @@ const YourAccount: React.FC = () => {
       } else {
         updateUser({ profilePhoto: response.profilePhoto });
       }
-      alert('Foto de perfil atualizada com sucesso!');
+      showSuccess('Photo Updated', 'Your profile photo has been successfully updated.');
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Erro ao fazer upload da foto');
+      showError('Upload Failed', 'Failed to upload your photo. Please try again.');
     } finally {
       setUploadingPhoto(false);
     }
   };
 
+  const handleDeleteAccount = () => {
+    // Logout and redirect to home
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('ageConfirmed');
+    navigate('/');
+  };
   if (!user) return null;
 
   return (
@@ -375,6 +394,15 @@ const YourAccount: React.FC = () => {
               <div className="bg-dark-200 rounded-xl p-6 border border-dark-100">
                 <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
                 <div className="space-y-3">
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => setShowChangePassword(true)}
+                  >
+                    <Lock size={16} className="mr-2" />
+                    Change Password
+                  </Button>
+
                   {!user.isPremium && (
                     <Button
                       variant="primary"
@@ -383,6 +411,17 @@ const YourAccount: React.FC = () => {
                     >
                       <Crown size={16} className="mr-2" />
                       Upgrade to Premium
+                    </Button>
+                  )}
+
+                  {user.isPremium && (
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onClick={() => setShowRecommendContent(true)}
+                    >
+                      <Star size={16} className="mr-2" />
+                      Recommend Content
                     </Button>
                   )}
 
@@ -402,20 +441,58 @@ const YourAccount: React.FC = () => {
                       variant="outline"
                       fullWidth
                       onClick={() => {
-                        // TODO: Implement resend verification
-                        alert('Verification email sent!');
+                        window.open('/resend-verification', '_blank');
                       }}
                     >
                       <Mail size={16} className="mr-2" />
                       Verify Email
                     </Button>
                   )}
+
+                  <div className="pt-4 border-t border-dark-100">
+                    <Button
+                      variant="danger"
+                      fullWidth
+                      onClick={() => setShowDeleteAccount(true)}
+                    >
+                      <Trash2 size={16} className="mr-2" />
+                      Delete Account
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
+
+      <DeleteAccountModal
+        isOpen={showDeleteAccount}
+        onClose={() => setShowDeleteAccount(false)}
+        onSuccess={handleDeleteAccount}
+      />
+
+      <RecommendContentModal
+        isOpen={showRecommendContent}
+        onClose={() => setShowRecommendContent(false)}
+      />
+
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={hideAlert}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
     </main>
   );
 };

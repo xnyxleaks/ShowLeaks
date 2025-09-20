@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import AlertModal from '../components/ui/AlertModal';
+import { useAlert } from '../hooks/useAlert';
 import { CreditCard, ArrowLeft, ExternalLink, Crown, Calendar, DollarSign, XCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import axios from 'axios';
@@ -10,6 +12,7 @@ const BillingPortal: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const { alert, showError, showSuccess, hideAlert } = useAlert();
 
   useEffect(() => {
     if (!user) {
@@ -28,46 +31,55 @@ const BillingPortal: React.FC = () => {
         `${import.meta.env.VITE_BACKEND_URL}/billing/portal`,
         { email: user.email },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      // Abrir portal do Stripe em nova aba
       window.open(response.data.url, '_blank');
     } catch (error) {
       console.error('Error opening billing portal:', error);
-      alert('Error opening billing portal. Please try again.');
+      showError('Portal Error', 'Error opening billing portal. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelSubscription = async () => {
-    if (!user || !confirm('Are you sure you want to cancel your subscription? You will lose premium access at the end of your billing period.')) {
-      return;
-    }
+    if (!user) return;
 
+    showError(
+      'Confirm Cancellation',
+      'Are you sure you want to cancel your subscription? You will lose premium access at the end of your billing period.',
+      {
+        showCancel: true,
+        confirmText: 'Yes, Cancel',
+        cancelText: 'Keep Subscription',
+        onConfirm: async () => {
+          await performCancellation();
+        },
+      }
+    );
+  };
+
+  const performCancellation = async () => {
     setCancelLoading(true);
     try {
       const token = sessionStorage.getItem('token');
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/billing/cancel`,
-        { email: user.email },
+        { email: user!.email },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      alert('Subscription cancelled successfully. You will retain premium access until the end of your billing period.');
-      // Refresh user data
-      window.location.reload();
+      showSuccess(
+        'Subscription Cancelled',
+        'Subscription cancelled successfully. You will retain premium access until the end of your billing period.',
+        () => window.location.reload()
+      );
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      alert('Error cancelling subscription. Please try again or contact support.');
+      showError('Cancellation Error', 'Error cancelling subscription. Please try again or contact support.');
     } finally {
       setCancelLoading(false);
     }
@@ -111,9 +123,7 @@ const BillingPortal: React.FC = () => {
                   <DollarSign size={18} className="text-primary-500 mr-2" />
                   <span className="text-gray-400 text-sm">Plan Status</span>
                 </div>
-                <p className="text-white font-semibold">
-                  {user.isPremium ? 'Premium' : 'Free'}
-                </p>
+                <p className="text-white font-semibold">{user.isPremium ? 'Premium' : 'Free'}</p>
               </div>
 
               <div className="bg-dark-300/50 rounded-lg p-4">
@@ -144,8 +154,7 @@ const BillingPortal: React.FC = () => {
           <div className="bg-dark-200 rounded-xl p-6 border border-dark-100">
             <h2 className="text-2xl font-bold text-white mb-4">Manage Subscription</h2>
             <p className="text-gray-300 mb-6">
-              Access your Stripe billing portal to manage your subscription, update payment methods, 
-              view invoices, and download receipts.
+              Access your Stripe billing portal to manage your subscription, update payment methods, view invoices, and download receipts.
             </p>
 
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
@@ -177,14 +186,14 @@ const BillingPortal: React.FC = () => {
             </Button>
 
             <p className="text-gray-500 text-sm mt-4">
-              You will be redirected to Stripe's secure billing portal in a new tab.
+              You will be redirected to Stripe&apos;s secure billing portal in a new tab.
             </p>
 
             {user.isPremium && (
               <div className="mt-8 pt-6 border-t border-dark-100">
                 <h3 className="text-lg font-semibold text-white mb-4">Cancel Subscription</h3>
                 <p className="text-gray-300 mb-4">
-                  You can cancel your subscription at any time. You'll retain premium access until the end of your current billing period.
+                  You can cancel your subscription at any time. You&apos;ll retain premium access until the end of your current billing period.
                 </p>
                 <Button
                   variant="danger"
@@ -212,16 +221,24 @@ const BillingPortal: React.FC = () => {
               If you have any questions about your subscription or billing, please contact our support team.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="outline">
-                Contact Support
-              </Button>
-              <Button variant="ghost">
-                View FAQ
-              </Button>
+              <Button variant="outline">Contact Support</Button>
+              <Button variant="ghost">View FAQ</Button>
             </div>
           </div>
         </div>
       </div>
+
+      <AlertModal
+        isOpen={alert.isOpen}
+        onClose={hideAlert}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm}
+        showCancel={alert.showCancel}
+      />
     </main>
   );
 };
