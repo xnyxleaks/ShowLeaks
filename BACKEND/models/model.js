@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     ethnicity: {
-      type: DataTypes.ENUM('arab', 'asian', 'ebony', 'indian', 'latina', 'white'),
+      type: DataTypes.STRING,
       allowNull: true,
     },
     tags: {

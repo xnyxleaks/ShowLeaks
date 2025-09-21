@@ -1,47 +1,51 @@
+// server.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session); // +++
-const db = require('./models');
-require('dotenv').config();
+const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
+const path = require('path');
+
+const db = require('./models'); // deve exportar { sequelize, Sequelize, ... }
+const { Umzug, SequelizeStorage } = require('umzug');
 
 const app = express();
 
-// CORS: permita cookies se houver front separado
+// CORS
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
 
-// Se estiver atrás de proxy/LB (Vercel/Render/NGINX), habilite:
-app.set('trust proxy', 1); // +++
+app.set('trust proxy', 1);
 
-// Sessão com Postgres (elimina MemoryStore)
+// Sessão
 app.use(session({
   name: 'sid',
   store: new pgSession({
     conString: process.env.POSTGRES_URL,
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET, // remova default inseguro
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // exige HTTPS em prod
-    sameSite: 'lax', // use 'none' se front em domínio diferente + HTTPS
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   },
   proxy: true
 }));
 
-// Body parser: aplique globalmente, exceto webhook
+// Body parser global exceto webhook
 app.use((req, res, next) => {
   if (req.originalUrl === '/webhook') return next();
   return express.json()(req, res, next);
 });
 
+// Rotas
 const webhookRouter = require('./routes/webhook');
 app.use('/webhook', webhookRouter);
 
@@ -70,8 +74,6 @@ const recommendationsRouter = require('./routes/recommendations');
 app.use('/auth', authRouter);
 app.use('/age-verification', ageVerificationRouter);
 app.use('/i18n', i18nRouter);
-
-// Aplicar verificação de idade para rotas de conteúdo adulto
 app.use('/models', ageVerificationMiddleware, modelsRouter);
 app.use('/content', ageVerificationMiddleware, contentRouter);
 app.use('/reports', reportsRouter);
@@ -83,40 +85,53 @@ app.use('/notifications', notificationsRouter);
 app.use('/admin', adminRouter);
 app.use('/recommendations', recommendationsRouter);
 
-// Rota de saúde
+// Health
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
   });
 });
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
 
-const PORT = process.env.PORT || 3001;
+// Postgres pool verificação básica
+const pool = new Pool({ connectionString: process.env.POSTGRES_URL });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+// Função de bootstrap: autentica, roda migrations e só então sobe o servidor
+(async function bootstrap() {
+  try {
+    await pool.connect().then(c => { console.log('Conexão bem-sucedida ao banco de dados'); c.release(); });
 
-pool.connect((err, client, done) => {
-  if (err) {
-    console.error('Erro ao conectar ao banco de dados:', err);
-    return;
-  }
-  console.log('Conexão bem-sucedida ao banco de dados');
-  done();
-});
-
-db.sequelize.authenticate()
-  .then(() => {
+    await db.sequelize.authenticate();
     console.log('Conexão com o banco de dados estabelecida com sucesso.');
-    return db.sequelize.sync({ force: false });
-  })
-  .catch(err => {
-    console.error('Erro ao conectar ao banco de dados Sequelize:', err);
-  });
 
-module.exports = app;
+    // Umzug configurado para usar a mesma storage do sequelize-cli (tabela SequelizeMeta)
+    const umzug = new Umzug({
+      migrations: { glob: path.join(__dirname, 'migrations', '*.js') },
+      context: db.sequelize.getQueryInterface(),
+      storage: new SequelizeStorage({ sequelize: db.sequelize }),
+      logger: console
+    });
+
+    const pending = await umzug.pending();
+    if (pending.length) {
+      console.log(`Executando ${pending.length} migration(s) pendente(s)...`);
+      await umzug.up();
+      console.log('Migrations aplicadas.');
+    } else {
+      console.log('Nenhuma migration pendente.');
+    }
+
+    // NÃO usar sync() quando há migrations, para evitar drift de esquema.
+    // Se ainda desejar criar tabelas ausentes em dev, limite-se a:
+    // await db.sequelize.sync({ force: false, alter: false });
+
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Falha no bootstrap da aplicação:', err);
+    process.exit(1); // falha rápida e explícita em caso de schema inválido
+  }
+})();
