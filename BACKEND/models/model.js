@@ -1,5 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
   const Model = sequelize.define('Model', {
+    model_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -47,10 +51,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     ethnicity: {
       type: DataTypes.ENUM('arab', 'asian', 'ebony', 'indian', 'latina', 'white'),
-      allowNull: true,
-    },
-    orientation: {
-      type: DataTypes.STRING,
       allowNull: true,
     },
     tags: {
@@ -109,11 +109,17 @@ module.exports = (sequelize, DataTypes) => {
   Model.associate = function(models) {
     Model.hasMany(models.Content, {
       foreignKey: 'modelId',
+      sourceKey: 'model_id',
       as: 'contents'
     });
     Model.hasMany(models.Report, {
       foreignKey: 'modelId',
       as: 'reports'
+    });
+    Model.hasMany(models.UserHistory, {
+      foreignKey: 'model_id',
+      sourceKey: 'model_id',
+      as: 'histories'
     });
   };
 

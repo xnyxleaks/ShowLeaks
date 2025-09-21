@@ -1,12 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
   const Content = sequelize.define('Content', {
-    modelId: {
-      type: DataTypes.INTEGER,
+    model_id: {
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'Models',
-        key: 'id'
-      }
+    },
+    slug: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
     title: {
       type: DataTypes.STRING,
@@ -62,7 +63,8 @@ module.exports = (sequelize, DataTypes) => {
 
   Content.associate = function(models) {
     Content.belongsTo(models.Model, {
-      foreignKey: 'modelId',
+      foreignKey: 'model_id',
+      targetKey: 'model_id',
       as: 'model'
     });
     Content.hasMany(models.Report, {

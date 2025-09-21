@@ -24,8 +24,6 @@ import {
 } from 'lucide-react';
 import { modelsApi, contentApi, reportsApi, authApi } from '../../services/api';
 import { adminApi } from '../../services/api';
-import axios from 'axios';
-
 interface DashboardStats {
   totalUsers: number;
   premiumUsers: number;
@@ -70,6 +68,12 @@ const AdminDashboard: React.FC = () => {
       return;
     }
     loadDashboardStats();
+    loadActiveUsers();
+    loadContentCharts();
+    
+    // Auto-refresh active users every 30 seconds
+    const interval = setInterval(loadActiveUsers, 30000);
+    return () => clearInterval(interval);
   }, [user, navigate]);
 
   const loadDashboardStats = async () => {
@@ -124,6 +128,26 @@ const AdminDashboard: React.FC = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadActiveUsers = async () => {
+    try {
+      const data = await adminApi.getActiveUsers();
+      setActiveUsers(data);
+    } catch (error) {
+      console.error('Error loading active users:', error);
+    }
+  };
+
+  
+
+  const loadContentCharts = async () => {
+    try {
+      const data = await adminApi.getContentCharts();
+      setContentCharts(data);
+    } catch (error) {
+      console.error('Error loading content charts:', error);
     }
   };
 
@@ -641,12 +665,17 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, loading,
   };
 
   return (
-    <div className="bg-gradient-to-br from-dark-200 to-dark-100 rounded-2xl p-6 border border-dark-100/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+    <div className="bg-gradient-to-br from-dark-200 to-dark-100 rounded-2xl p-6 border border-dark-100/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
       <div className="flex items-center justify-between mb-4">
         <div className={`w-12 h-12 bg-gradient-to-br ${colorClasses[color]} rounded-2xl flex items-center justify-center shadow-lg`}>
           {icon}
         </div>
-        <TrendingUp className="w-5 h-5 text-gray-400" />
+        <div className="flex items-center">
+          {title === "Online Now" && (
+            <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" />
+          )}
+          <TrendingUp className="w-5 h-5 text-gray-400" />
+        </div>
       </div>
       <div>
         <p className="text-gray-400 text-sm mb-1">{title}</p>

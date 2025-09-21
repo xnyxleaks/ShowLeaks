@@ -29,7 +29,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/models" element={<Models />} />
             <Route path="/model/:slug" element={<ModelDetail />} />
-            <Route path="/content/:id" element={<ContentDetail />} />
+            <Route path="/content/:slug" element={<ContentDetail />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/dmca" element={<DMCA />} />
             <Route path="/success" element={<PaymentSuccess />} />

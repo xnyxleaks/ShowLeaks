@@ -74,8 +74,13 @@ export const contentApi = {
     return response.data;
   },
   
-  getByModel: async (modelId: number, params?: { page?: number; limit?: number; type?: string; sortBy?: string }) => {
-    const response = await api.get<ApiResponse<Content[]>>(`/content/model/${modelId}`, { params });
+  getByModel: async (model_id: string, params?: { page?: number; limit?: number; type?: string; sortBy?: string }) => {
+    const response = await api.get<ApiResponse<Content[]>>(`/content/model/${model_id}`, { params });
+    return response.data;
+  },
+  
+  getBySlug: async (slug: string) => {
+    const response = await api.get<Content>(`/content/slug/${slug}`);
     return response.data;
   },
   
@@ -307,6 +312,16 @@ export const likesApi = {
 export const adminApi = {
   getStats: async () => {
     const response = await api.get('/admin/stats');
+    return response.data;
+  },
+  
+  getActiveUsers: async () => {
+    const response = await api.get('/admin/active-users');
+    return response.data;
+  },
+  
+  getContentCharts: async () => {
+    const response = await api.get('/admin/content/charts');
     return response.data;
   },
   

@@ -16,13 +16,9 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id'
       }
     },
-    modelId: {
-      type: DataTypes.INTEGER,
+    model_id: {
+      type: DataTypes.STRING,
       allowNull: true,
-      references: {
-        model: 'Models',
-        key: 'id'
-      }
     },
     action: {
       type: DataTypes.ENUM('view', 'like', 'share', 'download'),
@@ -46,7 +42,8 @@ module.exports = (sequelize, DataTypes) => {
       as: 'content'
     });
     UserHistory.belongsTo(models.Model, {
-      foreignKey: 'modelId',
+      foreignKey: 'model_id',
+      targetKey: 'model_id',
       as: 'model'
     });
   };

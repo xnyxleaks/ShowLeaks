@@ -254,7 +254,7 @@ const Home: React.FC = () => {
                 contents.map((content) => (
                   <Link 
                     key={content.id}
-                    to={`/content/${content.id}`}
+                    to={`/content/${content.slug}`}
                     className="group block overflow-hidden bg-dark-200 rounded-lg shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden">

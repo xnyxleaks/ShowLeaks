@@ -6,6 +6,12 @@ const { Model, Content, Report, UserHistory } = require('../models');
 const { Op } = require('sequelize');
 const authMiddleware = require('../Middleware/Auth');
 
+function generateContentSlug(modelName, contentTitle) {
+  const modelSlug = slugify(modelName, { lower: true, strict: true });
+  const contentSlug = slugify(contentTitle, { lower: true, strict: true });
+  const hash = crypto.createHash('md5').update(contentTitle + Date.now()).digest('hex').slice(0, 6);
+  return `${modelSlug}-${contentSlug}-${hash}`;
+}
 function generateReadableSlug(name) {
   const baseSlug = slugify(name, { lower: true, strict: true });
   const hash = crypto.createHash('md5').update(name + Date.now()).digest('hex').slice(0, 6);
@@ -119,9 +125,19 @@ router.get('/', async (req, res) => {
 // Criar novo modelo
 router.post('/', async (req, res) => {
   try {
+    const { model_id, name } = req.body;
+    
+    if (!model_id) {
+      return res.status(400).json({ error: 'model_id é obrigatório' });
+    }
+    
+    if (!name) {
+      return res.status(400).json({ error: 'name é obrigatório' });
+    }
+    
     let modelData = {
       ...req.body,
-      slug: generateReadableSlug(req.body.name),
+      slug: generateReadableSlug(name),
     };
     
     // Processar birthDate se fornecido
@@ -165,7 +181,7 @@ router.get('/:slug', async (req, res) => {
     if (userId) {
       await UserHistory.create({
         userId,
-        modelId: model.id,
+        model_id: model.model_id,
         action: 'view'
       });
     }

@@ -68,9 +68,9 @@ router.get('/', async (req, res) => {
 });
 
 // Listar conteúdos por modelo
-router.get('/model/:modelId', async (req, res) => {
+router.get('/model/:model_id', async (req, res) => {
   try {
-    const { modelId } = req.params;
+    const { model_id } = req.params;
     const {
       page = 1,
       limit = 20,
@@ -79,8 +79,14 @@ router.get('/model/:modelId', async (req, res) => {
       sortBy = 'recent'
     } = req.query;
 
+    // Verificar se o modelo existe
+    const model = await Model.findOne({ where: { model_id } });
+    if (!model) {
+      return res.status(404).json({ error: 'Modelo não encontrado' });
+    }
+
     const offset = (page - 1) * limit;
-    const where = { modelId, isActive: true, status: 'active' };
+    const where = { model_id, isActive: true, status: 'active' };
     let order = [];
 
     // Filtros
@@ -141,6 +147,15 @@ router.post('/', async (req, res) => {
   try {
     const contentData = { ...req.body };
     
+    // Verificar se o modelo existe
+    const model = await Model.findOne({ where: { model_id: contentData.model_id } });
+    if (!model) {
+      return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
+    }
+    
+    // Gerar slug baseado no nome da model e título do conteúdo
+    contentData.slug = generateContentSlug(model.name, contentData.title);
+    
     // Validar e processar info se fornecido
     if (contentData.info) {
       const { images, videos, size } = contentData.info;
@@ -161,6 +176,32 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error('Erro ao criar conteúdo:', error);
     res.status(500).json({ error: 'Erro ao criar conteúdo', details: error.message });
+  }
+});
+
+// Buscar conteúdo por slug
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const userId = req.headers.authorization ? req.user?.id : null;
+
+    const content = await Content.findOne({
+      where: { slug, isActive: true },
+      include: [{
+        model: Model,
+        as: 'model',
+        attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug']
+      }]
+    });
+
+    if (!content) {
+      return res.status(404).json({ error: 'Conteúdo não encontrado' });
+    }
+
+    res.json(content);
+  } catch (error) {
+    console.error('Erro ao buscar conteúdo:', error);
+    res.status(500).json({ error: 'Erro ao buscar conteúdo', details: error.message });
   }
 });
 
@@ -209,7 +250,7 @@ router.post('/:id/view', async (req, res) => {
       await UserHistory.create({
         userId,
         contentId: content.id,
-        modelId: content.modelId,
+        model_id: content.model_id,
         action: 'view'
       });
     }
@@ -245,7 +286,7 @@ router.post('/:id/share', async (req, res) => {
       await UserHistory.create({
         userId,
         contentId: content.id,
-        modelId: content.modelId,
+        model_id: content.model_id,
         action: 'share',
         metadata: { platform }
       });

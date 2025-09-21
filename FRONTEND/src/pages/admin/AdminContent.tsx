@@ -226,7 +226,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
     thumbnailUrl: content?.thumbnailUrl || '',
     type: content?.type || 'image',
     tags: content?.tags?.join(', ') || '',
-    modelId: content?.modelId || '',
+    model_id: content?.model_id || '',
     modelSearch: content?.model?.name || '',
     images: content?.info?.images || '',
     videos: content?.info?.videos || '',
@@ -255,7 +255,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
   const selectModel = (model: Model) => {
     setFormData({
       ...formData,
-      modelId: model.id.toString(),
+      model_id: model.model_id,
       modelSearch: model.name
     });
     setShowSuggestions(false);
@@ -263,7 +263,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.modelId) {
+    if (!formData.model_id) {
       alert('Please select a model');
       return;
     }
@@ -277,7 +277,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
         thumbnailUrl: formData.thumbnailUrl || undefined,
         type: formData.type as 'video' | 'image' | 'gallery',
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-        modelId: parseInt(formData.modelId),
+        model_id: formData.model_id,
         info: {
           images: formData.images ? parseInt(formData.images) : undefined,
           videos: formData.videos ? parseInt(formData.videos) : undefined,
@@ -355,7 +355,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
                       />
                       <div>
                         <div className="text-white font-medium">{model.name}</div>
-                        <div className="text-gray-400 text-xs">{model.ethnicity}</div>
+                        <div className="text-gray-400 text-xs">ID: {model.model_id}</div>
                       </div>
                     </button>
                   ))}
@@ -515,6 +515,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
               variant="primary"
               fullWidth
               disabled={loading || !formData.modelId}
+              disabled={loading || !formData.model_id}
             >
               {loading ? 'Saving...' : (content ? 'Update' : 'Create')}
             </Button>

@@ -27,7 +27,7 @@ import { linkvertise } from '../components/Linkvertise/Linkvertise';
 import LoadingScreen from '../components/LoadingScreen';
 
 const ContentDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [content, setContent] = useState<Content | null>(null);
   const [relatedContents, setRelatedContents] = useState<Content[]>([]);
@@ -42,12 +42,12 @@ const ContentDetail: React.FC = () => {
   useEffect(() => {
     if (user && !user.isVerified) {
       const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
-      if (viewedContent.length >= 3 && !viewedContent.includes(parseInt(id!))) {
+      if (viewedContent.length >= 3 && !viewedContent.includes(slug!)) {
         setShowContentLimit(true);
         return;
       }
     }
-  }, [user, id]);
+  }, [user, slug]);
 
   // Aplicar monetização Linkvertise para usuários não-premium
   useEffect(() => {
@@ -55,9 +55,10 @@ const ContentDetail: React.FC = () => {
       linkvertise("1329936", { whitelist: ["mega.nz"] });
     }
   }, [user]);
+  
   useEffect(() => {
     const fetchContentData = async () => {
-      if (!id) {
+      if (!slug) {
         navigate('/');
         return;
       }
@@ -65,15 +66,15 @@ const ContentDetail: React.FC = () => {
       // Check content limit for unverified users
       if (user && !user.isVerified) {
         const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
-        if (viewedContent.length >= 3 && !viewedContent.includes(parseInt(id))) {
+        if (viewedContent.length >= 3 && !viewedContent.includes(slug)) {
           setShowContentLimit(true);
           setLoading(false);
           return;
         }
         
         // Add current content to viewed list
-        if (!viewedContent.includes(parseInt(id))) {
-          viewedContent.push(parseInt(id));
+        if (!viewedContent.includes(slug)) {
+          viewedContent.push(slug);
           sessionStorage.setItem('viewedContent', JSON.stringify(viewedContent));
         }
       }
@@ -83,12 +84,12 @@ const ContentDetail: React.FC = () => {
         setLoading(true);
         
         // Carregar dados do conteúdo
-        const contentData = await contentApi.getById(parseInt(id));
+        const contentData = await contentApi.getBySlug(slug);
         setContent(contentData);
         
         // Carregar conteúdos relacionados da mesma modelo
-        if (contentData.modelId) {
-          const relatedData = await contentApi.getByModel(contentData.modelId, { 
+        if (contentData.model_id) {
+          const relatedData = await contentApi.getByModel(contentData.model_id, { 
             limit: 6,
             sortBy: 'recent'
           });
@@ -118,7 +119,7 @@ const ContentDetail: React.FC = () => {
     };
 
     fetchContentData();
-  }, [id, navigate]);
+  }, [slug, navigate, user]);
 
   const handleResendVerification = async () => {
     if (user?.email) {
@@ -203,13 +204,11 @@ const ContentDetail: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-    const handleContentClick = (targetId: number) => {
-    if (!targetId) return;
-    if (String(targetId) === id) return; // evita recarregar o mesmo
-    navigate(`/content/${targetId}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+const handleContentClick = (targetSlug: string) => {
+  if (!targetSlug || targetSlug === slug) return;
+  navigate(`/content/${targetSlug}`);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 
 
@@ -517,7 +516,7 @@ if (loading) {
                     (relatedContents.length > 0 ? relatedContents : generalContents).map((relatedContent) => (
                       <button
                         key={relatedContent.id}
-                        onClick={() => handleContentClick(relatedContent.id)}
+                        onClick={() => handleContentClick(relatedContent.slug)}
                         className="block group w-full text-left"
                       >
                         <div className="flex space-x-3 p-3 rounded-lg hover:bg-dark-300 transition-colors">

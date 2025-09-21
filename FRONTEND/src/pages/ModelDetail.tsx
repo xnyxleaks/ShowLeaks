@@ -89,7 +89,7 @@ const ModelDetail: React.FC = () => {
         search: searchQuery || undefined,
         ...filters
       };
-      const response = await contentApi.getByModel(model.id, params);
+      const response = await contentApi.getByModel(model.model_id, params);
       setContents(response.contents || []);
       setTotalPages(response.pagination?.totalPages || 1);
       setTotalItems(response.pagination?.totalItems || 0);
@@ -201,8 +201,8 @@ const ModelDetail: React.FC = () => {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
-  const handleContentDetail = (contentId: number) => {
-    navigate(`/content/${contentId}`);
+  const handleContentDetail = (contentSlug: string) => {
+    navigate(`/content/${contentSlug}`);
   };
 
   if (loading) {
@@ -443,13 +443,6 @@ const ModelDetail: React.FC = () => {
                       </div>
                     )}
                     
-                    {model.orientation && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Orientation</span>
-                        <span className="text-white font-medium">{model.orientation}</span>
-                      </div>
-                    )}
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-gray-400">Joined</span>
                       <span className="text-white font-medium">
@@ -588,7 +581,7 @@ const ModelDetail: React.FC = () => {
                       {contents.map((content) => (
                         <div
                           key={content.id}
-                          onClick={() => handleContentDetail(content.id)}
+                          onClick={() => handleContentDetail(content.slug)}
                           className="group relative aspect-[4/5] bg-dark-300 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl"
                         >
                           {content.thumbnailUrl ? (

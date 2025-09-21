@@ -215,6 +215,7 @@ interface ModelModalProps {
 
 const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
   const [formData, setFormData] = useState({
+    model_id: model?.model_id || '',
     name: model?.name || '',
     photoUrl: model?.photoUrl || '',
     bio: model?.bio || '',
@@ -232,7 +233,6 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
     cupSize: model?.cupSize || '',
     birthDate: model?.birthDate ? new Date(model.birthDate).toISOString().split('T')[0] : '',
     ethnicity: model?.ethnicity || '',
-    orientation: model?.orientation || '',
     tags: model?.tags?.join(', ') || ''
   });
   const [loading, setLoading] = useState(false);
@@ -277,6 +277,23 @@ const ModelModal: React.FC<ModelModalProps> = ({ model, onClose, onSave }) => {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Model ID * {!model && <span className="text-xs text-gray-500">(unique identifier)</span>}
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.model_id}
+                onChange={(e) => setFormData({ ...formData, model_id: e.target.value })}
+                className="w-full px-3 py-2 bg-dark-300 border border-dark-100 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="e.g., maria-silva-2024"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Identificador da modelo (pode ser editado)
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Name *

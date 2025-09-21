@@ -1,5 +1,6 @@
 export interface Model {
   id: number;
+  model_id: string;
   name: string;
   photoUrl: string;
   bio: string;
@@ -22,7 +23,6 @@ export interface Model {
   cupSize?: string;
   birthDate?: string;
   ethnicity?: 'arab' | 'asian' | 'ebony' | 'indian' | 'latina' | 'white';
-  orientation?: string;
   tags: string[];
   views: number;
   slug: string;
@@ -34,7 +34,8 @@ export interface Model {
 
 export interface Content {
   id: number;
-  modelId: number;
+  model_id: string;
+  slug: string;
   title: string;
   url: string;
   thumbnailUrl?: string;
