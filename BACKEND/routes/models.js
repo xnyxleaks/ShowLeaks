@@ -166,7 +166,8 @@ router.get('/:slug', async (req, res) => {
         as: 'contents',
         where: { isActive: true },
         required: false,
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        separate: true
       }]
     });
 

@@ -10,14 +10,14 @@ module.exports = (sequelize, DataTypes) => {
     contentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: { model: 'Contents', key: 'id' }, // <-- ajustar
+      references: { model: 'Contents', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
     modelId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: { model: 'Models', key: 'id' },   // <-- ajustar
+      references: { model: 'Models', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },

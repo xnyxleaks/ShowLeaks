@@ -14,7 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       references: {
         model: 'Models',
         key: 'id'
-      }
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
     },
     userId: {
       type: DataTypes.INTEGER,
@@ -22,7 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       references: {
         model: 'Users',
         key: 'id'
-      }
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
     },
     reason: {
       type: DataTypes.ENUM('broken_link', 'child_content', 'no_consent', 'spam', 'inappropriate', 'other'),

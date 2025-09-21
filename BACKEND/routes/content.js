@@ -1,24 +1,37 @@
+// routes/content.js
 const express = require('express');
 const router = express.Router();
 const { Content, Model, UserHistory } = require('../models');
 const { Op } = require('sequelize');
-const authMiddleware = require('../Middleware/Auth');
+// const authMiddleware = require('../Middleware/Auth'); // habilite se necessário
+
+// util local para slug
+function slugify(text) {
+  return String(text || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 120);
+}
+function generateContentSlug(modelName, contentTitle) {
+  const base = `${slugify(modelName)}-${slugify(contentTitle)}`;
+  // opcional: acrescente timestamp para reduzir colisão
+  return `${base}-${Date.now().toString(36)}`;
+}
 
 // Listar todos os conteúdos
 router.get('/', async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 20,
-      sortBy = 'recent',
-      search
-    } = req.query;
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit || 20);
+    const sortBy = req.query.sortBy || 'recent';
+    const search = req.query.search;
 
     const offset = (page - 1) * limit;
     const where = { isActive: true, status: 'active' };
     let order = [];
 
-    // Filtros
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
@@ -26,39 +39,31 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    // Ordenação
     switch (sortBy) {
-      case 'popular':
-        order = [['views', 'DESC']];
-        break;
-      case 'oldest':
-        order = [['createdAt', 'ASC']];
-        break;
-      case 'recent':
-      default:
-        order = [['createdAt', 'DESC']];
-        break;
+      case 'popular': order = [['views', 'DESC']]; break;
+      case 'oldest': order = [['createdAt', 'ASC']]; break;
+      default: order = [['createdAt', 'DESC']]; break;
     }
 
     const { count, rows } = await Content.findAndCountAll({
       where,
       order,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit,
+      offset,
       include: [{
         model: Model,
         as: 'model',
-        attributes: ['id', 'name', 'slug', 'photoUrl']
+        attributes: ['id', 'model_id', 'name', 'slug', 'photoUrl']
       }]
     });
 
     res.json({
       contents: rows,
       pagination: {
-        currentPage: parseInt(page),
+        currentPage: page,
         totalPages: Math.ceil(count / limit),
         totalItems: count,
-        itemsPerPage: parseInt(limit)
+        itemsPerPage: limit
       }
     });
   } catch (error) {
@@ -71,69 +76,43 @@ router.get('/', async (req, res) => {
 router.get('/model/:model_id', async (req, res) => {
   try {
     const { model_id } = req.params;
-    const {
-      page = 1,
-      limit = 20,
-      type,
-      tags,
-      sortBy = 'recent'
-    } = req.query;
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit || 20);
+    const sortBy = req.query.sortBy || 'recent';
+    const type = req.query.type;
+    const tags = req.query.tags;
 
-    // Verificar se o modelo existe
     const model = await Model.findOne({ where: { model_id } });
-    if (!model) {
-      return res.status(404).json({ error: 'Modelo não encontrado' });
-    }
+    if (!model) return res.status(404).json({ error: 'Modelo não encontrado' });
 
     const offset = (page - 1) * limit;
     const where = { model_id, isActive: true, status: 'active' };
     let order = [];
 
-    // Filtros
-    if (type) {
-      where.type = type;
-    }
-
+    if (type) where.type = type;
     if (tags) {
       const tagArray = Array.isArray(tags) ? tags : [tags];
-      where.tags = {
-        [Op.overlap]: tagArray
-      };
+      where.tags = { [Op.overlap]: tagArray };
     }
 
-    // Ordenação
     switch (sortBy) {
-      case 'popular':
-        order = [['views', 'DESC']];
-        break;
-      case 'oldest':
-        order = [['createdAt', 'ASC']];
-        break;
-      case 'recent':
-      default:
-        order = [['createdAt', 'DESC']];
-        break;
+      case 'popular': order = [['views', 'DESC']]; break;
+      case 'oldest': order = [['createdAt', 'ASC']]; break;
+      default: order = [['createdAt', 'DESC']]; break;
     }
 
     const { count, rows } = await Content.findAndCountAll({
-      where,
-      order,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      include: [{
-        model: Model,
-        as: 'model',
-        attributes: ['id', 'name', 'slug']
-      }]
+      where, order, limit, offset,
+      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'slug'] }]
     });
 
     res.json({
       contents: rows,
       pagination: {
-        currentPage: parseInt(page),
+        currentPage: page,
         totalPages: Math.ceil(count / limit),
         totalItems: count,
-        itemsPerPage: parseInt(limit)
+        itemsPerPage: limit
       }
     });
   } catch (error) {
@@ -146,31 +125,23 @@ router.get('/model/:model_id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const contentData = { ...req.body };
-    
-    // Verificar se o modelo existe
+
     const model = await Model.findOne({ where: { model_id: contentData.model_id } });
-    if (!model) {
-      return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
-    }
-    
-    // Gerar slug baseado no nome da model e título do conteúdo
+    if (!model) return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
+
+    // slug
     contentData.slug = generateContentSlug(model.name, contentData.title);
-    
-    // Validar e processar info se fornecido
+
+    // info
     if (contentData.info) {
       const { images, videos, size } = contentData.info;
-      contentData.info = {};
-      
-      if (images && images > 0) contentData.info.images = parseInt(images);
-      if (videos && videos > 0) contentData.info.videos = parseInt(videos);
-      if (size && size > 0) contentData.info.size = parseInt(size);
-      
-      // Se info está vazio, definir como null
-      if (Object.keys(contentData.info).length === 0) {
-        contentData.info = null;
-      }
+      const info = {};
+      if (images > 0) info.images = parseInt(images);
+      if (videos > 0) info.videos = parseInt(videos);
+      if (size > 0) info.size = parseInt(size);
+      contentData.info = Object.keys(info).length ? info : null;
     }
-    
+
     const newContent = await Content.create(contentData);
     res.status(201).json(newContent);
   } catch (error) {
@@ -183,21 +154,13 @@ router.post('/', async (req, res) => {
 router.get('/slug/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    const userId = req.headers.authorization ? req.user?.id : null;
 
     const content = await Content.findOne({
       where: { slug, isActive: true },
-      include: [{
-        model: Model,
-        as: 'model',
-        attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug']
-      }]
+      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug'] }]
     });
 
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
-
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
     res.json(content);
   } catch (error) {
     console.error('Erro ao buscar conteúdo:', error);
@@ -205,25 +168,17 @@ router.get('/slug/:slug', async (req, res) => {
   }
 });
 
-// Detalhes do conteúdo
+// Detalhes do conteúdo por id
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.authorization ? req.user?.id : null;
 
     const content = await Content.findOne({
       where: { id, isActive: true },
-      include: [{
-        model: Model,
-        as: 'model',
-        attributes: ['id', 'name', 'photoUrl', 'slug']
-      }]
+      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug'] }]
     });
 
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
-
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
     res.json(content);
   } catch (error) {
     console.error('Erro ao buscar conteúdo:', error);
@@ -235,17 +190,13 @@ router.get('/:id', async (req, res) => {
 router.post('/:id/view', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.authorization ? req.user?.id : null;
+    const userId = req.user?.id || null;
 
     const content = await Content.findByPk(id);
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
-    // Incrementar visualizações
     await content.increment('views');
 
-    // Registrar no histórico do usuário se logado
     if (userId) {
       await UserHistory.create({
         userId,
@@ -255,7 +206,9 @@ router.post('/:id/view', async (req, res) => {
       });
     }
 
-    res.json({ message: 'Visualização registrada', views: content.views + 1 });
+    // recarregue valor atualizado se necessário
+    const updated = await Content.findByPk(id, { attributes: ['views'] });
+    res.json({ message: 'Visualização registrada', views: updated?.views ?? null });
   } catch (error) {
     console.error('Erro ao registrar visualização:', error);
     res.status(500).json({ error: 'Erro ao registrar visualização', details: error.message });
@@ -267,21 +220,13 @@ router.post('/:id/share', async (req, res) => {
   try {
     const { id } = req.params;
     const { platform } = req.body;
-    const userId = req.headers.authorization ? req.user?.id : null;
+    const userId = req.user?.id || null;
 
     const content = await Content.findByPk(id, {
-      include: [{
-        model: Model,
-        as: 'model',
-        attributes: ['name', 'slug']
-      }]
+      include: [{ model: Model, as: 'model', attributes: ['name', 'slug'] }]
     });
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
-
-    // Registrar compartilhamento no histórico
     if (userId) {
       await UserHistory.create({
         userId,
@@ -292,15 +237,9 @@ router.post('/:id/share', async (req, res) => {
       });
     }
 
-    // Gerar URL de compartilhamento
     const shareUrl = `${process.env.FRONTEND_URL}/model/${content.model.slug}?content=${content.id}`;
     const shareText = `Confira ${content.title} - ${content.model.name}`;
-
-    res.json({
-      shareUrl,
-      shareText,
-      platform
-    });
+    res.json({ shareUrl, shareText, platform });
   } catch (error) {
     console.error('Erro ao compartilhar conteúdo:', error);
     res.status(500).json({ error: 'Erro ao compartilhar conteúdo', details: error.message });
@@ -312,43 +251,19 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const content = await Content.findByPk(id);
-
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
     const updateData = { ...req.body };
-    
-    // Processar info se fornecido
+
     if (updateData.info) {
       const { images, videos, size } = updateData.info;
-      updateData.info = {};
-      
-      if (images && images > 0) updateData.info.images = parseInt(images);
-      if (videos && videos > 0) updateData.info.videos = parseInt(videos);
-      if (size && size > 0) updateData.info.size = parseInt(size);
-      
-      if (Object.keys(updateData.info).length === 0) {
-        updateData.info = null;
-      }
+      const info = {};
+      if (images > 0) info.images = parseInt(images);
+      if (videos > 0) info.videos = parseInt(videos);
+      if (size > 0) info.size = parseInt(size);
+      updateData.info = Object.keys(info).length ? info : null;
     }
-    
-    await content.update(updateData);
-    
-    // Processar info se fornecido
-    if (updateData.info) {
-      const { images, videos, size } = updateData.info;
-      updateData.info = {};
-      
-      if (images && images > 0) updateData.info.images = parseInt(images);
-      if (videos && videos > 0) updateData.info.videos = parseInt(videos);
-      if (size && size > 0) updateData.info.size = parseInt(size);
-      
-      if (Object.keys(updateData.info).length === 0) {
-        updateData.info = null;
-      }
-    }
-    
+
     await content.update(updateData);
     res.json(content);
   } catch (error) {
@@ -357,15 +272,12 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Deletar conteúdo
+// Deletar conteúdo (soft delete)
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const content = await Content.findByPk(id);
-
-    if (!content) {
-      return res.status(404).json({ error: 'Conteúdo não encontrado' });
-    }
+    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
     await content.update({ isActive: false });
     res.status(204).send();

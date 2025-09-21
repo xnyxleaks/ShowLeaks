@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     model_id: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     name: {
       type: DataTypes.STRING,
@@ -108,8 +109,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Model.associate = function(models) {
     Model.hasMany(models.Content, {
-      foreignKey: 'modelId',
-      sourceKey: 'model_id',
+      foreignKey: 'model_id',
       as: 'contents'
     });
     Model.hasMany(models.Report, {
@@ -118,7 +118,6 @@ module.exports = (sequelize, DataTypes) => {
     });
     Model.hasMany(models.UserHistory, {
       foreignKey: 'model_id',
-      sourceKey: 'model_id',
       as: 'histories'
     });
   };

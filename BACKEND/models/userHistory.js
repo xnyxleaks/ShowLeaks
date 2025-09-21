@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     model_id: {
       type: DataTypes.STRING,
       allowNull: true,
+      references: {
+        model: 'Models',
+        key: 'model_id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
     },
     action: {
       type: DataTypes.ENUM('view', 'like', 'share', 'download'),
@@ -43,7 +49,6 @@ module.exports = (sequelize, DataTypes) => {
     });
     UserHistory.belongsTo(models.Model, {
       foreignKey: 'model_id',
-      targetKey: 'model_id',
       as: 'model'
     });
   };

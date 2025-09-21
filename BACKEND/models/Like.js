@@ -7,10 +7,22 @@ module.exports = (sequelize, DataTypes) => {
     contentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Contents',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
     modelId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: 'Models',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
     type: {
       type: DataTypes.ENUM('content', 'model'),
