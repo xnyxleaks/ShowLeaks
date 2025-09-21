@@ -1,5 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Content = sequelize.define('Content', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     model_id: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -68,10 +73,11 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Content.associate = function(models) {
-    Content.belongsTo(models.Model, {
-      foreignKey: 'model_id',
-      as: 'model'
-    });
+Content.belongsTo(models.Model, {
+  foreignKey: 'model_id',
+  targetKey: 'model_id',        // garante JOIN por model.model_id (varchar)
+  as: 'model'
+});
     Content.hasMany(models.Report, {
       foreignKey: 'contentId',
       as: 'reports'

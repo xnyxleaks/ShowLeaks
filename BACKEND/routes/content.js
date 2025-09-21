@@ -53,7 +53,8 @@ router.get('/', async (req, res) => {
       include: [{
         model: Model,
         as: 'model',
-        attributes: ['id', 'model_id', 'name', 'slug', 'photoUrl']
+        attributes: ['id', 'model_id', 'name', 'slug', 'photoUrl'],
+        required: true
       }]
     });
 
@@ -82,11 +83,11 @@ router.get('/model/:model_id', async (req, res) => {
     const type = req.query.type;
     const tags = req.query.tags;
 
-    const model = await Model.findOne({ where: { model_id } });
+    const model = await Model.findOne({ where: { model_id: model_id } });
     if (!model) return res.status(404).json({ error: 'Modelo não encontrado' });
 
     const offset = (page - 1) * limit;
-    const where = { model_id, isActive: true, status: 'active' };
+    const where = { model_id: model_id, isActive: true, status: 'active' };
     let order = [];
 
     if (type) where.type = type;
@@ -103,7 +104,11 @@ router.get('/model/:model_id', async (req, res) => {
 
     const { count, rows } = await Content.findAndCountAll({
       where, order, limit, offset,
-      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'slug'] }]
+      include: [{ 
+        model: Model, 
+        as: 'model', 
+        attributes: ['id', 'model_id', 'name', 'slug', 'photoUrl'] 
+      }]
     });
 
     res.json({
@@ -143,7 +148,7 @@ router.post('/', async (req, res) => {
     }
 
     const newContent = await Content.create(contentData);
-    res.status(201).json(newContent);
+    res.status(201).json({ message: 'success' });
   } catch (error) {
     console.error('Erro ao criar conteúdo:', error);
     res.status(500).json({ error: 'Erro ao criar conteúdo', details: error.message });
@@ -157,7 +162,11 @@ router.get('/slug/:slug', async (req, res) => {
 
     const content = await Content.findOne({
       where: { slug, isActive: true },
-      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug'] }]
+      include: [{ 
+        model: Model, 
+        as: 'model', 
+        attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug'] 
+      }]
     });
 
     if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
@@ -171,18 +180,22 @@ router.get('/slug/:slug', async (req, res) => {
 // Detalhes do conteúdo por id
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);               // evita comparar varchar=int
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'id inválido' });
 
     const content = await Content.findOne({
       where: { id, isActive: true },
-      include: [{ model: Model, as: 'model', attributes: ['id', 'model_id', 'name', 'photoUrl', 'slug'] }]
+      include: [{
+        model: Model,
+        as: 'model',
+        attributes: ['id','model_id','name','photoUrl','slug']
+      }]
     });
 
-    if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
+    if (!content) return res.status(404).json({ error: 'conteúdo não encontrado' });
     res.json(content);
-  } catch (error) {
-    console.error('Erro ao buscar conteúdo:', error);
-    res.status(500).json({ error: 'Erro ao buscar conteúdo', details: error.message });
+  } catch (err) {
+    res.status(500).json({ error: 'erro ao buscar conteúdo', details: err.message });
   }
 });
 
@@ -190,9 +203,20 @@ router.get('/:id', async (req, res) => {
 router.post('/:id/view', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id || null;
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = require('jsonwebtoken').verify(token, process.env.TOKEN_VERIFY_ACCESS);
+        userId = decoded.id;
+      } catch (err) {
+        // Token inválido, mas continua sem userId
+      }
+    }
 
-    const content = await Content.findByPk(id);
+    const content = await Content.findByPk(parseInt(id));
     if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
     await content.increment('views');
@@ -207,7 +231,7 @@ router.post('/:id/view', async (req, res) => {
     }
 
     // recarregue valor atualizado se necessário
-    const updated = await Content.findByPk(id, { attributes: ['views'] });
+    const updated = await Content.findByPk(parseInt(id), { attributes: ['views'] });
     res.json({ message: 'Visualização registrada', views: updated?.views ?? null });
   } catch (error) {
     console.error('Erro ao registrar visualização:', error);
@@ -220,10 +244,25 @@ router.post('/:id/share', async (req, res) => {
   try {
     const { id } = req.params;
     const { platform } = req.body;
-    const userId = req.user?.id || null;
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = require('jsonwebtoken').verify(token, process.env.TOKEN_VERIFY_ACCESS);
+        userId = decoded.id;
+      } catch (err) {
+        // Token inválido, mas continua sem userId
+      }
+    }
 
-    const content = await Content.findByPk(id, {
-      include: [{ model: Model, as: 'model', attributes: ['name', 'slug'] }]
+    const content = await Content.findByPk(parseInt(id), {
+      include: [{ 
+        model: Model, 
+        as: 'model', 
+        attributes: ['name', 'slug'] 
+      }]
     });
     if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
@@ -250,7 +289,7 @@ router.post('/:id/share', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const content = await Content.findByPk(id);
+    const content = await Content.findByPk(parseInt(id));
     if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
     const updateData = { ...req.body };
@@ -276,7 +315,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const content = await Content.findByPk(id);
+    const content = await Content.findByPk(parseInt(id));
     if (!content) return res.status(404).json({ error: 'Conteúdo não encontrado' });
 
     await content.update({ isActive: false });

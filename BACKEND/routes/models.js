@@ -84,9 +84,6 @@ router.get('/', async (req, res) => {
       case 'oldest':
         order = [['createdAt', 'ASC']];
         break;
-      case 'random':
-        order = [sequelize.fn('RANDOM')];
-        break;
       case 'recent':
       default:
         order = [['createdAt', 'DESC']];
@@ -146,7 +143,7 @@ router.post('/', async (req, res) => {
     }
 
     const newModel = await Model.create(modelData);
-    res.status(201).json(newModel);
+    res.status(201).json({ message: 'success' });
   } catch (error) {
     console.error('Erro ao criar modelo:', error);
     res.status(500).json({ error: 'Erro ao criar modelo', details: error.message });
@@ -157,7 +154,18 @@ router.post('/', async (req, res) => {
 router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    const userId = req.headers.authorization ? req.user?.id : null;
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = require('jsonwebtoken').verify(token, process.env.TOKEN_VERIFY_ACCESS);
+        userId = decoded.id;
+      } catch (err) {
+        // Token inválido, mas continua sem userId
+      }
+    }
 
     const model = await Model.findOne({
       where: { slug, isActive: true },
@@ -198,20 +206,13 @@ router.get('/:slug', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const model = await Model.findByPk(id);
+    const model = await Model.findByPk(parseInt(id));
 
     if (!model) {
       return res.status(404).json({ error: 'Modelo não encontrado' });
     }
 
     const updateData = { ...req.body };
-    
-    // Processar birthDate se fornecido
-    if (updateData.birthDate) {
-      updateData.birthDate = new Date(updateData.birthDate);
-    }
-    
-    await model.update(updateData);
     
     // Processar birthDate se fornecido
     if (updateData.birthDate) {
@@ -230,7 +231,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const model = await Model.findByPk(id);
+    const model = await Model.findByPk(parseInt(id));
 
     if (!model) {
       return res.status(404).json({ error: 'Modelo não encontrado' });
