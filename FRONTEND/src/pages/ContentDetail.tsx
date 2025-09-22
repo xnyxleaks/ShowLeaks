@@ -38,9 +38,32 @@ const ContentDetail: React.FC = () => {
   const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
 
-        useEffect(() => {
-          linkvertise("1329936", { whitelist: ["mega.nz"] });
-      }, []);
+      useEffect(() =>{
+        linkvertise("1329936", { whitelist: ["mega.nz"] });
+      },[])
+
+
+    const handleMegaLinkClick = async () => {
+    if (!content) return;
+
+    try {
+      // Registrar visualização
+      await contentApi.recordView(content.id);
+      
+      // Abrir link em nova aba
+      window.open(content.url, '_blank');
+      
+      // Atualizar contador local
+      setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
+    } catch (error) {
+      console.error('Error recording view:', error);
+      // Mesmo com erro, abrir o link
+      if (content) {
+        window.open(content.url, '_blank');
+      }
+    }
+  };
+      
 
   // Check content limit for unverified users
   useEffect(() => {
@@ -52,8 +75,6 @@ const ContentDetail: React.FC = () => {
       }
     }
   }, [user, slug]);
-
-
   
   useEffect(() => {
     const fetchContentData = async () => {
@@ -61,6 +82,8 @@ const ContentDetail: React.FC = () => {
         navigate('/');
         return;
       }
+
+
 
       // Check content limit for unverified users
       if (user && !user.isVerified) {
@@ -70,6 +93,8 @@ const ContentDetail: React.FC = () => {
           setLoading(false);
           return;
         }
+
+        
         
         // Add current content to viewed list
         if (!viewedContent.includes(slug)) {
@@ -180,7 +205,6 @@ const handleContentClick = (targetSlug: string) => {
 };
 
 
-
 if (loading) {
   return (
     <LoadingScreen/>
@@ -194,6 +218,7 @@ if (loading) {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Content not found</h2>
           <Button onClick={handleBack}>Go Back</Button>
+          
         </div>
       </div>
     );
@@ -209,6 +234,7 @@ if (loading) {
           >
             <ArrowLeft size={20} className="mr-2" />
             <span>Back</span>
+           
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -237,7 +263,6 @@ if (loading) {
                         })}</span>
                       </div>
                       
-                      {/* Content Info */}
                      
                     </div>
                   </div>
@@ -275,32 +300,17 @@ if (loading) {
                 </div>
 
                 {/* Tags */}
-                {content.tags && content.tags.length > 0 && (
-                  <div className="mb-6">
-                    <div className="flex flex-wrap gap-2">
-                      {content.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-primary-500/20 text-primary-300 text-sm rounded-full border border-primary-500/30"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Mega Link Section */}
                 {/* Premium Download Section - Mobile First Design */}
                 <div className="relative overflow-hidden rounded-3xl shadow-2xl min-h-[400px] md:min-h-[500px]">
-                  {/* Background Image with Blur */}
                   {content.model?.photoUrl && (
                     <>
                       <div 
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{
                           backgroundImage: `url(${content.model.photoUrl})`,
-                          filter: 'blur(25px)',
+                          filter: 'blur(10px)',
                           transform: 'scale(1.2)'
                         }}
                       />
@@ -326,6 +336,8 @@ if (loading) {
                             {content.model?.name}
                           </h3>
                           <p className="text-white/80 text-sm md:text-base">Exclusive Content</p>
+                          
+
                         </div>
                       </div>
                       
@@ -350,23 +362,26 @@ if (loading) {
                         </p>
                       </div>
                       
-                      <a href={content.url} target='_blank'
-                        data-mega-url={content.url}
-                        className="group relative overflow-hidden bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 backdrop-blur-md border-2 border-white/30 hover:border-white/50 text-white font-bold text-lg md:text-xl py-4 md:py-5 shadow-2xl hover:shadow-primary-500/25 transition-all duration-300"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <span className="relative flex items-center justify-center">
-                          <ExternalLink size={24} className="mr-3 transition-transform duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                          <span className="hidden sm:inline">Download Now</span>
-                          <span className="sm:hidden">Download Now</span>
-                        </span>
-                      </a>
+                      
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    onClick={handleMegaLinkClick}
+                    className="group"
+                  >
+                    <span className="flex items-center justify-center">
+                      <ExternalLink size={20} className="mr-2 transition-transform duration-300 group-hover:translate-x-1" />
+                      Mega Link
+                    </span>
+                  </Button>
                       
                       <div className="text-center">
                         <div className="inline-flex items-center space-x-4 text-white/70 text-sm">
                           <div className="flex items-center">
                             <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
                             <span>Secure Download</span>
+                            
                           </div>
                           <div className="flex items-center">
                             <div className="w-2 h-2 bg-blue-400 rounded-full mr-2" />

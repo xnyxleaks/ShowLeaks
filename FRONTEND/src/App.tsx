@@ -23,8 +23,13 @@ import { linkvertise } from './components/Linkvertise/Linkvertise';
 
 function App() {
 
+      useEffect(() =>{
+        linkvertise("1329936", { whitelist: ["mega.nz"] });
+      },[])
+
 
   return (
+    
     <Router>
       <div className="flex flex-col min-h-screen bg-dark-300">
         <Header />

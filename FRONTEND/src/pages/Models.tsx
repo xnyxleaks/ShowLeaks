@@ -8,8 +8,10 @@ import { modelsApi, ageVerificationApi } from '../services/api';
 import { Flame, TrendingUp, Clock, Search, Filter, X, Users } from 'lucide-react';
 import type { Model, SortOption, FilterOptions } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { linkvertise } from '../components/Linkvertise/Linkvertise';
 
-const ITEMS_PER_PAGE = 12;
+
+const ITEMS_PER_PAGE = 24;
 
 const Models: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,6 +25,10 @@ const Models: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const { fetchUser } = useAuthStore();
+
+      useEffect(() =>{
+        linkvertise("1329936", { whitelist: ["mega.nz"] });
+      },[])
 
   useEffect(() => {
     window.scrollTo(0, 0);
