@@ -114,7 +114,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
                   <div key={index} className="flex items-center bg-dark-300/50 px-2 py-1 rounded-full">
                     {getTagIcon(tag)}
                     <span className="text-xs text-gray-300 ml-1">
-                      {formatTagName(tag)}
+                      {tag}
                     </span>
                   </div>
                 ))}
