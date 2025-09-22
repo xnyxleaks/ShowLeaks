@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import type { Content, FilterOptions, SortOption } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { linkvertise } from '../components/Linkvertise/Linkvertise';
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 24;
 
 const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,6 +34,7 @@ const Home: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const { fetchUser } = useAuthStore();
+
 
   useEffect(() => {
     window.scrollTo(0, 0);

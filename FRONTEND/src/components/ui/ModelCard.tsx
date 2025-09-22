@@ -39,33 +39,24 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
 
   const getTagIcon = (tag: string) => {
     const iconMap: { [key: string]: JSX.Element } = {
-      'PROFESSION_INFLUENCER': <Star size={12} className="text-yellow-500" />,
-      'PROFESSION_PORN_STAR': <Crown size={12} className="text-red-500" />,
-      'PROFESSION_TIKTOK_STAR': <Music size={12} className="text-pink-500" />,
-      'PROFESSION_COSPLAYER': <Users size={12} className="text-purple-500" />,
-      'PROFESSION_CHEERLEADER': <Star size={12} className="text-blue-500" />,
-      'PROFESSION_GAMER': <Zap size={12} className="text-green-500" />,
-      'CATEGORY_MASTURBATION': <Heart size={12} className="text-red-400" />,
-      'CATEGORY_KISSING': <Heart size={12} className="text-pink-400" />,
-      'CATEGORY_BOOBS_TOUCHING': <Heart size={12} className="text-orange-400" />,
-      'CATEGORY_BOOBS_LICKING': <Heart size={12} className="text-red-400" />,
-      'CATEGORY_FINGERING': <Heart size={12} className="text-purple-400" />,
-      'CATEGORY_DILDO': <Zap size={12} className="text-blue-400" />,
-      'CATEGORY_ORAL': <Heart size={12} className="text-green-400" />,
-      'CATEGORY_BLOWJOB': <Heart size={12} className="text-indigo-400" />,
-      'CATEGORY_VAGINAL': <Heart size={12} className="text-pink-400" />,
-      'CATEGORY_DILDO_BLOWJOB': <Zap size={12} className="text-cyan-400" />
+      'INFLUENCER': <Star size={12} className="text-yellow-500" />,
+      'PORN_STAR': <Crown size={12} className="text-red-500" />,
+      'TIKTOK_STAR': <Music size={12} className="text-pink-500" />,
+      'COSPLAYER': <Users size={12} className="text-purple-500" />,
+      'CHEERLEADER': <Star size={12} className="text-blue-500" />,
+      'GAMER': <Zap size={12} className="text-green-500" />,
+      'MASTURBATION': <Heart size={12} className="text-red-400" />,
+      'KISSING': <Heart size={12} className="text-pink-400" />,
+      'BOOBS_TOUCHING': <Heart size={12} className="text-orange-400" />,
+      'BOOBS_LICKING': <Heart size={12} className="text-red-400" />,
+      'FINGERING': <Heart size={12} className="text-purple-400" />,
+      'DILDO': <Zap size={12} className="text-blue-400" />,
+      'ORAL': <Heart size={12} className="text-green-400" />,
+      'BLOWJOB': <Heart size={12} className="text-indigo-400" />,
+      'VAGINAL': <Heart size={12} className="text-pink-400" />,
+      'DILDO_BLOWJOB': <Zap size={12} className="text-cyan-400" />
     };
     return iconMap[tag] || <Star size={12} className="text-gray-400" />;
-  };
-
-  const formatTagName = (tag: string) => {
-    return tag
-      .replace('PROFESSION_', '')
-      .replace('CATEGORY_', '')
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const calculateAge = (birthDate?: string) => {
@@ -94,14 +85,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-300/90"></div>
         
-        {/* Ethnicity Badge */}
-        {model.ethnicity && (
-          <div className="absolute top-2 left-2">
-            <span className="px-2 py-1 bg-primary-500/80 text-white text-xs font-medium rounded-full">
-              {getEthnicityLabel(model.ethnicity)}
-            </span>
-          </div>
-        )}
+
         
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h3 className="font-semibold text-lg text-white group-hover:text-primary-400 transition-colors mb-2">

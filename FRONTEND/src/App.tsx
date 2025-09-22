@@ -18,8 +18,12 @@ import AdminContent from './pages/admin/AdminContent';
 import AdminReports from './pages/admin/AdminReports';
 import BillingPortal from './pages/BillingPortal';
 import YourAccount from './pages/YourAccount';
+import { useEffect } from 'react';
+import { linkvertise } from './components/Linkvertise/Linkvertise';
 
 function App() {
+
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-dark-300">

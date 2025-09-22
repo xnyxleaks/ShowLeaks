@@ -38,6 +38,10 @@ const ContentDetail: React.FC = () => {
   const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
 
+        useEffect(() => {
+          linkvertise("1329936", { whitelist: ["mega.nz"] });
+      }, []);
+
   // Check content limit for unverified users
   useEffect(() => {
     if (user && !user.isVerified) {
@@ -49,12 +53,7 @@ const ContentDetail: React.FC = () => {
     }
   }, [user, slug]);
 
-  // Aplicar monetização Linkvertise para usuários não-premium
-  useEffect(() => {
-    if (!user?.isPremium && !user?.isAdmin) {
-      linkvertise("1329936", { whitelist: ["mega.nz"] });
-    }
-  }, [user]);
+
   
   useEffect(() => {
     const fetchContentData = async () => {
@@ -136,37 +135,7 @@ const ContentDetail: React.FC = () => {
     navigate(-1);
   };
 
-  const handleMegaLinkClick = async () => {
-    if (!content) return;
-
-    try {
-      // Registrar visualização
-      await contentApi.recordView(content.id);
-      
-      // Para usuários não-premium, o link será processado pelo Linkvertise
-      if (!user?.isPremium && !user?.isAdmin) {
-        // O Linkvertise já processou o botão, apenas abrir
-        const linkvertiseUrl = document.querySelector('[data-linkvertise-url]')?.getAttribute('data-linkvertise-url');
-        if (linkvertiseUrl) {
-          window.open(linkvertiseUrl, '_blank');
-        } else {
-          window.open(content.url, '_blank');
-        }
-      } else {
-        // Usuários premium vão direto
-        window.open(content.url, '_blank');
-      }
-      
-      // Atualizar contador local
-      setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
-    } catch (error) {
-      console.error('Error recording view:', error);
-      // Mesmo com erro, abrir o link
-      if (content) {
-        window.open(content.url, '_blank');
-      }
-    }
-  };
+  
 
   const handleShare = async () => {
     if (!content) return;
@@ -357,6 +326,7 @@ if (loading) {
                             {content.model?.name}
                           </h3>
                           <p className="text-white/80 text-sm md:text-base">Exclusive Content</p>
+                          <a href="https://mega.nz/folder/b74ESaoB#IMUoeD56FZuS7661nh_Sxg">MEGA DOWNLOAD BUTTON</a>
                         </div>
                       </div>
                       
@@ -381,11 +351,7 @@ if (loading) {
                         </p>
                       </div>
                       
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        fullWidth
-                        onClick={handleMegaLinkClick}
+                      <a href={content.url}
                         data-mega-url={content.url}
                         className="group relative overflow-hidden bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 backdrop-blur-md border-2 border-white/30 hover:border-white/50 text-white font-bold text-lg md:text-xl py-4 md:py-5 shadow-2xl hover:shadow-primary-500/25 transition-all duration-300"
                       >
@@ -395,7 +361,7 @@ if (loading) {
                           <span className="hidden sm:inline">Download Now</span>
                           <span className="sm:hidden">Download Now</span>
                         </span>
-                      </Button>
+                      </a>
                       
                       <div className="text-center">
                         <div className="inline-flex items-center space-x-4 text-white/70 text-sm">

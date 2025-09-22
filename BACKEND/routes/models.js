@@ -146,7 +146,7 @@ router.post('/', async (req, res) => {
     res.status(201).json({ message: 'success' });
   } catch (error) {
     console.error('Erro ao criar modelo:', error);
-    res.status(500).json({ error: 'Erro ao criar modelo', details: error.message });
+    res.status(500).json({ error: 'Erro ao criar modelo', details: error });
   }
 });
 
