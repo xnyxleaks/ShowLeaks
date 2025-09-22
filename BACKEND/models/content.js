@@ -67,33 +67,26 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null,
       comment: 'Contains images count, videos count, and size in bytes'
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     }
   }, {
-    timestamps: true,
+    timestamps: true, // mantém updatedAt automático
   });
 
   Content.associate = function(models) {
-Content.belongsTo(models.Model, {
-  foreignKey: 'model_id',
-  targetKey: 'model_id',        // garante JOIN por model.model_id (varchar)
-  as: 'model'
-});
-    Content.hasMany(models.Report, {
-      foreignKey: 'contentId',
-      as: 'reports'
+    Content.belongsTo(models.Model, {
+      foreignKey: 'model_id',
+      targetKey: 'model_id',
+      as: 'model'
     });
-    Content.hasMany(models.UserHistory, {
-      foreignKey: 'contentId',
-      as: 'histories'
-    });
-    Content.hasMany(models.Comment, {
-      foreignKey: 'contentId',
-      as: 'comments'
-    });
-    Content.hasMany(models.Like, {
-      foreignKey: 'contentId',
-      as: 'likes'
-    });
+    Content.hasMany(models.Report, { foreignKey: 'contentId', as: 'reports' });
+    Content.hasMany(models.UserHistory, { foreignKey: 'contentId', as: 'histories' });
+    Content.hasMany(models.Comment, { foreignKey: 'contentId', as: 'comments' });
+    Content.hasMany(models.Like, { foreignKey: 'contentId', as: 'likes' });
   };
 
   return Content;

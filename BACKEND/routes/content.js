@@ -3,21 +3,20 @@ const express = require('express');
 const router = express.Router();
 const { Content, Model, UserHistory } = require('../models');
 const { Op } = require('sequelize');
-// const authMiddleware = require('../Middleware/Auth'); // habilite se necessário
+const slugify = require('slugify');
 
-// util local para slug
-function slugify(text) {
-  return String(text || '')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .slice(0, 120);
-}
-function generateContentSlug(modelName, contentTitle) {
-  const base = `${slugify(modelName)}-${slugify(contentTitle)}`;
-  // opcional: acrescente timestamp para reduzir colisão
-  return `${base}-${Date.now().toString(36)}`;
+// util: slug = <slug-da-modelo>-<slug-do-título>(-<contador> quando houver repetição do título para a mesma modelo)
+async function generateContentSlug(modelName, contentTitle, modelId) {
+  const modelSlug = slugify(modelName, { lower: true, strict: true });
+  const titleSlug = slugify(contentTitle, { lower: true, strict: true });
+
+  // Conta quantos conteúdos já existem com mesmo model_id e mesmo título
+  const existingCount = await Content.count({
+    where: { model_id: modelId, title: contentTitle }
+  });
+
+  const base = `${modelSlug}-${titleSlug}`;
+  return existingCount > 0 ? `${base}-${existingCount + 1}` : base;
 }
 
 // Listar todos os conteúdos
@@ -132,10 +131,12 @@ router.post('/', async (req, res) => {
     const contentData = { ...req.body };
 
     const model = await Model.findOne({ where: { model_id: contentData.model_id } });
-    if (!model) return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
+    if (!model) {
+      return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
+    }
 
-    // slug
-    contentData.slug = generateContentSlug(model.name, contentData.title);
+    // Geração do slug conforme regra: <slug-da-modelo>-<slug-do-título>(-<contador>)
+    contentData.slug = await generateContentSlug(model.name, contentData.title, contentData.model_id);
 
     // info
     if (contentData.info) {
@@ -148,7 +149,11 @@ router.post('/', async (req, res) => {
     }
 
     const newContent = await Content.create(contentData);
-    res.status(201).json({ message: 'success' });
+
+    res.status(201).json({
+      message: 'success',
+      slug: newContent.slug
+    });
   } catch (error) {
     console.error('Erro ao criar conteúdo:', error);
     res.status(500).json({ error: 'Erro ao criar conteúdo', details: error.message });
@@ -180,7 +185,7 @@ router.get('/slug/:slug', async (req, res) => {
 // Detalhes do conteúdo por id
 router.get('/:id', async (req, res) => {
   try {
-    const id = Number(req.params.id);               // evita comparar varchar=int
+    const id = Number(req.params.id);
     if (!Number.isInteger(id)) return res.status(400).json({ error: 'id inválido' });
 
     const content = await Content.findOne({
@@ -230,7 +235,6 @@ router.post('/:id/view', async (req, res) => {
       });
     }
 
-    // recarregue valor atualizado se necessário
     const updated = await Content.findByPk(parseInt(id), { attributes: ['views'] });
     res.json({ message: 'Visualização registrada', views: updated?.views ?? null });
   } catch (error) {

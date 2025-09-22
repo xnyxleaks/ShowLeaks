@@ -191,7 +191,6 @@ const Home: React.FC = () => {
         {/* Content Grid */}
         <section className="py-12 bg-dark-300">
           <div className="container mx-auto px-4">
-            {/* Search and Controls */}
             <div className="mb-8">
               <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1">

@@ -326,7 +326,6 @@ if (loading) {
                             {content.model?.name}
                           </h3>
                           <p className="text-white/80 text-sm md:text-base">Exclusive Content</p>
-                          <a href="https://mega.nz/folder/b74ESaoB#IMUoeD56FZuS7661nh_Sxg">MEGA DOWNLOAD BUTTON</a>
                         </div>
                       </div>
                       
@@ -351,7 +350,7 @@ if (loading) {
                         </p>
                       </div>
                       
-                      <a href={content.url}
+                      <a href={content.url} target='_blank'
                         data-mega-url={content.url}
                         className="group relative overflow-hidden bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 backdrop-blur-md border-2 border-white/30 hover:border-white/50 text-white font-bold text-lg md:text-xl py-4 md:py-5 shadow-2xl hover:shadow-primary-500/25 transition-all duration-300"
                       >

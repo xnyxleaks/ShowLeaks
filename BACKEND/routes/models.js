@@ -13,10 +13,9 @@ function generateContentSlug(modelName, contentTitle) {
   return `${modelSlug}-${contentSlug}-${hash}`;
 }
 function generateReadableSlug(name) {
-  const baseSlug = slugify(name, { lower: true, strict: true });
-  const hash = crypto.createHash('md5').update(name + Date.now()).digest('hex').slice(0, 6);
-  return `${baseSlug}-${hash}`;
+  return slugify(name, { lower: true, strict: true });
 }
+
 
 // Listar modelos com filtros e ordenação
 router.get('/', async (req, res) => {
@@ -137,18 +136,23 @@ router.post('/', async (req, res) => {
       slug: generateReadableSlug(name),
     };
     
-    // Processar birthDate se fornecido
     if (modelData.birthDate) {
       modelData.birthDate = new Date(modelData.birthDate);
     }
 
     const newModel = await Model.create(modelData);
-    res.status(201).json({ message: 'success' });
+
+    res.status(201).json({ 
+      message: 'success', 
+      slug: newModel.slug 
+    });
+
   } catch (error) {
     console.error('Erro ao criar modelo:', error);
     res.status(500).json({ error: 'Erro ao criar modelo', details: error });
   }
 });
+
 
 // Detalhes do modelo
 router.get('/:slug', async (req, res) => {
