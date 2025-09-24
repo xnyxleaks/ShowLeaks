@@ -34,10 +34,8 @@ const Home: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const { fetchUser } = useAuthStore();
+    const { user } = useAuthStore();
 
-        useEffect(() =>{
-          linkvertise("1329936", { whitelist: ["mega.nz"] });
-        },[])
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -188,6 +186,7 @@ const Home: React.FC = () => {
                 >
                   Go Premium
                 </Link>
+                <a target='_blank' href="https://mega.nz/folder/KhQ3DTjK#Mf28dJ6hRrAUKbdmaV8g3Q">MEGAAAAAAAAAAAA</a>
               </div>
             </div>
           </div>

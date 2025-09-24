@@ -38,9 +38,9 @@ const ContentDetail: React.FC = () => {
   const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
 
-      useEffect(() =>{
-        linkvertise("1329936", { whitelist: ["mega.nz"] });
-      },[])
+        useEffect(() =>{
+          linkvertise("1329936", { whitelist: ["mega.nz"] });
+        },[])
 
 
     const handleMegaLinkClick = async () => {
@@ -362,7 +362,7 @@ if (loading) {
                         </p>
                       </div>
                       
-                      
+                      <a target='_blank' href="https://mega.nz/folder/KhQ3DTjK#Mf28dJ6hRrAUKbdmaV8g3Q">MEGAAAAAAAAAAAA</a>
                   <Button
                     variant="primary"
                     size="lg"
