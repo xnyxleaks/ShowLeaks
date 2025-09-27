@@ -39,14 +39,25 @@ const ContentDetail: React.FC = () => {
   const { user } = useAuthStore();
   const anchorRef = useRef<HTMLAnchorElement|null>(null);
 
+const getuserdata = sessionStorage.getItem("user");
+const parsed = getuserdata ? JSON.parse(getuserdata) : null;
+
+const isPremium = parsed?.isPremium; // true no seu caso
+const isAdmin = parsed?.isAdmin; // true no seu caso
+
+  
+
 useEffect(() => {
   if (content?.url) {
-    // aguarde o anchor renderizar e então converta
-    setTimeout(() => {
+    // aguarde o anchor renderizar e então converta 1329936
+if(!isPremium){
+      setTimeout(() => {
       console.log("rodou")
-      linkvertise("1329936", { whitelist: ["mega.nz"] });
-    }, 5);
+      linkvertise("1234314", { whitelist: ["mega.nz"] });
+    }, 3);
+}
   }
+  console.log(isAdmin)
 }, [content?.url]);
 
 
@@ -54,20 +65,12 @@ useEffect(() => {
     if (!content) return;
 
     try {
-      // Registrar visualização
       await contentApi.recordView(content.id);
-      
-      // Abrir link em nova aba
-      window.open(content.url, '_blank');
       
       // Atualizar contador local
       setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
     } catch (error) {
       console.error('Error recording view:', error);
-      // Mesmo com erro, abrir o link
-      if (content) {
-        window.open(content.url, '_blank');
-      }
     }
   };
       
@@ -256,7 +259,6 @@ if (loading) {
                     <h1 className="text-3xl font-bold text-white mb-3">
                       {content.title}
                     </h1>
-                     <a target='_blank' href="https://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zw">MEGAAAAAAAAAAAAAA</a>
                     <div className="flex items-center space-x-4 text-sm text-gray-400">
                       <div className="flex items-center">
                         <Eye size={16} className="mr-1 text-primary-500" />
@@ -371,7 +373,7 @@ if (loading) {
                       </div>
                       
                       
-<a ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
+<a onClick={handleMegaLinkClick} ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
 <Button
   variant="primary"
   size="lg"

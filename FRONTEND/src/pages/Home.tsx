@@ -170,7 +170,6 @@ const Home: React.FC = () => {
               <p className="text-xl md:text-2xl text-gray-300 mb-8 animate-fade-in-up">
                 Discover the latest exclusive content from premium models
               </p>
-               <a href="https://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zwhttps://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zw">MEGAAAAAAAAAAAAAA</a>
               <div className="flex items-center justify-center mb-8 text-gray-400 animate-fade-in-up delay-200">
                 <Flame className="w-5 h-5 mr-2 text-primary-500" />
                 <p>Explore {totalItems} premium content from verified models</p>
