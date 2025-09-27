@@ -23,8 +23,7 @@ import {
 import type { Content } from '../types';
 import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import {linkvertise } from '../components/Linkvertise/Linkvertise';
-
+import { linkvertise } from '../components/Linkvertise/Linkvertise';
 import LoadingScreen from '../components/LoadingScreen';
 
 const ContentDetail: React.FC = () => {
@@ -40,6 +39,16 @@ const ContentDetail: React.FC = () => {
   const { user } = useAuthStore();
   const anchorRef = useRef<HTMLAnchorElement|null>(null);
 
+useEffect(() => {
+  if (content?.url) {
+    // aguarde o anchor renderizar e então converta
+    setTimeout(() => {
+      console.log("rodou")
+      linkvertise("1329936", { whitelist: ["mega.nz"] });
+    }, 5);
+  }
+}, [content?.url]);
+
 
     const handleMegaLinkClick = async () => {
     if (!content) return;
@@ -47,21 +56,20 @@ const ContentDetail: React.FC = () => {
     try {
       // Registrar visualização
       await contentApi.recordView(content.id);
+      
+      // Abrir link em nova aba
+      window.open(content.url, '_blank');
+      
       // Atualizar contador local
       setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
     } catch (error) {
       console.error('Error recording view:', error);
+      // Mesmo com erro, abrir o link
+      if (content) {
+        window.open(content.url, '_blank');
+      }
     }
   };
-
-useEffect(() => {
-  if (content?.url) {
-    // aguarde o anchor renderizar e então converta
-    setTimeout(() => {
-      linkvertise("1329936", { whitelist: ["mega.nz"] });
-    }, 0);
-  }
-}, [content?.url]);
       
 
   // Check content limit for unverified users
@@ -363,7 +371,7 @@ if (loading) {
                       </div>
                       
                       
-<a onClick={handleMegaLinkClick} ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
+<a ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
 <Button
   variant="primary"
   size="lg"
