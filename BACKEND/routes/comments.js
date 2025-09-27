@@ -5,22 +5,25 @@ const { createNotification } = require('./notifications');
 const authMiddleware = require('../Middleware/Auth');
 const { Op } = require('sequelize');
 
-// Listar comentários
+// List comments
 router.get('/', async (req, res) => {
   try {
     const {
       contentId,
       modelId,
-      page = 1,
-      limit = 50,
+      page = '1',
+      limit = '50',
       sortBy = 'recent'
     } = req.query;
 
-    const offset = (page - 1) * limit;
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+    const offset = (pageNum - 1) * limitNum;
+
     const where = { isActive: true };
     let order = [];
 
-    // Filtros
+    // Filters
     if (contentId) {
       where.contentId = contentId;
     }
@@ -29,7 +32,7 @@ router.get('/', async (req, res) => {
       where.modelId = modelId;
     }
 
-    // Ordenação
+    // Ordering
     switch (sortBy) {
       case 'popular':
         order = [['likes', 'DESC'], ['createdAt', 'DESC']];
@@ -43,13 +46,14 @@ router.get('/', async (req, res) => {
         break;
     }
 
-    const userId = req.headers.authorization ? req.user?.id : null;
+    // userId is available only if some upstream middleware set req.user
+    const userId = req.user?.id || null;
 
     const { count, rows } = await Comment.findAndCountAll({
       where,
       order,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: limitNum,
+      offset,
       include: [
         {
           model: User,
@@ -70,10 +74,10 @@ router.get('/', async (req, res) => {
       ]
     });
 
-    // Verificar se o usuário curtiu cada comentário
+    // Check if the current user liked each comment
     let commentsWithLikes = rows;
     if (userId) {
-      const commentIds = rows.map(comment => comment.id);
+      const commentIds = rows.map(c => c.id);
       const userLikes = await CommentLike.findAll({
         where: {
           userId,
@@ -82,7 +86,7 @@ router.get('/', async (req, res) => {
       });
 
       const likedCommentIds = new Set(userLikes.map(like => like.commentId));
-      
+
       commentsWithLikes = rows.map(comment => ({
         ...comment.toJSON(),
         isLiked: likedCommentIds.has(comment.id)
@@ -97,50 +101,50 @@ router.get('/', async (req, res) => {
     res.json({
       comments: commentsWithLikes,
       pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(count / limit),
+        currentPage: pageNum,
+        totalPages: Math.ceil(count / limitNum),
         totalItems: count,
-        itemsPerPage: parseInt(limit)
+        itemsPerPage: limitNum
       }
     });
   } catch (error) {
-    console.error('Erro ao buscar comentários:', error);
-    res.status(500).json({ error: 'Erro ao buscar comentários', details: error.message });
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Error fetching comments', details: error.message });
   }
 });
 
-// Criar comentário
+// Create comment
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { contentId, modelId, text, parentId } = req.body;
     const userId = req.user.id;
 
-    if (!text || text.trim().length === 0) {
-      return res.status(400).json({ error: 'Texto do comentário é obrigatório' });
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ error: 'Comment text is required' });
     }
 
-    if (!contentId && !modelId) {
-      return res.status(400).json({ error: 'É necessário fornecer contentId ou modelId' });
+    // If not a reply, must provide contentId or modelId
+    if (!parentId && !contentId && !modelId) {
+      return res.status(400).json({ error: 'contentId or modelId is required' });
     }
 
-    // Se for um reply (parentId existe), não duplicar o contentId/modelId
     const commentData = {
       userId,
       text: text.trim(),
-      parentId
+      parentId: parentId || null
     };
 
-    // Apenas adicionar contentId/modelId se não for um reply
     if (!parentId) {
-      commentData.contentId = contentId;
-      commentData.modelId = modelId;
+      commentData.contentId = contentId || null;
+      commentData.modelId = modelId || null;
     } else {
-      // Para replies, buscar o comentário pai para herdar contentId/modelId
+      // For replies, inherit contentId/modelId from parent
       const parentComment = await Comment.findByPk(parentId);
-      if (parentComment) {
-        commentData.contentId = parentComment.contentId;
-        commentData.modelId = parentComment.modelId;
+      if (!parentComment) {
+        return res.status(400).json({ error: 'Parent comment not found' });
       }
+      commentData.contentId = parentComment.contentId || null;
+      commentData.modelId = parentComment.modelId || null;
     }
 
     const comment = await Comment.create(commentData);
@@ -154,19 +158,19 @@ router.post('/', authMiddleware, async (req, res) => {
     });
 
     res.status(201).json({
-      message: 'Comentário criado com sucesso',
+      message: 'Comment created successfully',
       comment: {
         ...commentWithUser.toJSON(),
         isLiked: false
       }
     });
   } catch (error) {
-    console.error('Erro ao criar comentário:', error);
-    res.status(500).json({ error: 'Erro ao criar comentário', details: error.message });
+    console.error('Error creating comment:', error);
+    res.status(500).json({ error: 'Error creating comment', details: error.message });
   }
 });
 
-// Atualizar comentário
+// Update comment
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
@@ -175,12 +179,16 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     const comment = await Comment.findByPk(id);
     if (!comment) {
-      return res.status(404).json({ error: 'Comentário não encontrado' });
+      return res.status(404).json({ error: 'Comment not found' });
     }
 
-    // Verificar se o usuário é o autor ou admin
+    // Check permissions
     if (comment.userId !== userId && !req.user.isAdmin) {
-      return res.status(403).json({ error: 'Não autorizado' });
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ error: 'Comment text is required' });
     }
 
     await comment.update({ text: text.trim() });
@@ -189,21 +197,21 @@ router.put('/:id', authMiddleware, async (req, res) => {
       include: [{
         model: User,
         as: 'user',
-        attributes: ['id', 'name', 'isPremium', 'isAdmin']
+        attributes: ['id', 'name', 'isPremium', 'isAdmin', 'profilePhoto']
       }]
     });
 
     res.json({
-      message: 'Comentário atualizado com sucesso',
+      message: 'Comment updated successfully',
       comment: updatedComment
     });
   } catch (error) {
-    console.error('Erro ao atualizar comentário:', error);
-    res.status(500).json({ error: 'Erro ao atualizar comentário', details: error.message });
+    console.error('Error updating comment:', error);
+    res.status(500).json({ error: 'Error updating comment', details: error.message });
   }
 });
 
-// Deletar comentário
+// Delete comment (soft delete)
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
@@ -211,24 +219,24 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
     const comment = await Comment.findByPk(id);
     if (!comment) {
-      return res.status(404).json({ error: 'Comentário não encontrado' });
+      return res.status(404).json({ error: 'Comment not found' });
     }
 
-    // Verificar se o usuário é o autor ou admin
+    // Check permissions
     if (comment.userId !== userId && !req.user.isAdmin) {
-      return res.status(403).json({ error: 'Não autorizado' });
+      return res.status(403).json({ error: 'Unauthorized' });
     }
 
     await comment.update({ isActive: false });
 
-    res.json({ message: 'Comentário deletado com sucesso' });
+    res.json({ message: 'Comment deleted successfully' });
   } catch (error) {
-    console.error('Erro ao deletar comentário:', error);
-    res.status(500).json({ error: 'Erro ao deletar comentário', details: error.message });
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ error: 'Error deleting comment', details: error.message });
   }
 });
 
-// Curtir/descurtir comentário
+// Like / unlike comment
 router.post('/:id/like', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
@@ -236,7 +244,7 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
 
     const comment = await Comment.findByPk(id);
     if (!comment) {
-      return res.status(404).json({ error: 'Comentário não encontrado' });
+      return res.status(404).json({ error: 'Comment not found' });
     }
 
     const existingLike = await CommentLike.findOne({
@@ -244,41 +252,43 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
     });
 
     if (existingLike) {
-      // Remover curtida
+      // Remove like
       await existingLike.destroy();
       await comment.decrement('likes');
-      
-      res.json({
-        message: 'Curtida removida',
+      await comment.reload();
+
+      return res.json({
+        message: 'Like removed',
         isLiked: false,
-        likes: comment.likes - 1
+        likes: comment.likes
       });
     } else {
-      // Adicionar curtida
+      // Add like
       await CommentLike.create({ userId, commentId: id });
       await comment.increment('likes');
-      
+      await comment.reload();
+
       // Create notification for comment author (if not self-like)
       if (comment.userId !== userId) {
-        const liker = await User.findByPk(userId);
+        const liker = await User.findByPk(userId, { attributes: ['id', 'name'] });
         await createNotification(
           comment.userId,
           'comment_like',
           'Someone liked your comment',
-          `${liker.name} liked your comment`,
+          `${liker?.name || 'Someone'} liked your comment`,
           { commentId: id, likerId: userId }
         );
       }
-      
-      res.json({
-        message: 'Commentary liked',
+
+      return res.json({
+        message: 'Comment liked',
         isLiked: true,
-        likes: comment.likes + 1
+        likes: comment.likes
       });
     }
   } catch (error) {
-    console.error('Erro ao curtir comentário:', error);
-    res.status(500).json({ error: 'Erro ao curtir comentário', details: error.message });
+    console.error('Error liking comment:', error);
+    res.status(500).json({ error: 'Error liking comment', details: error.message });
   }
 });
 

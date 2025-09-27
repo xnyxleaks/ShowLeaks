@@ -5,6 +5,7 @@ const pgSession = require('connect-pg-simple')(session); // +++
 const db = require('./models');
 require('dotenv').config();
 const { Pool } = require('pg');
+const encryptResponse = require('./Middleware/encryption');
 
 const app = express();
 
@@ -53,6 +54,8 @@ app.use((req, res, next) => {
   }
 });
 
+// Aplicar middleware de criptografia
+app.use(encryptResponse);
 const authRouter = require('./routes/auth');
 const modelsRouter = require('./routes/models');
 const contentRouter = require('./routes/content');

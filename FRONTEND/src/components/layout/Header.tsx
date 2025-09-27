@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import UserDropdown from './UserDropdown';
 import LanguageSelector from './LanguageSelector';
 import NotificationDropdown from './NotificationDropdown';
+import EncryptionStatus from '../ui/EncryptionStatus';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,6 +102,9 @@ const Header: React.FC = () => {
                   Admin
                 </NavLink>
               )}
+              
+              {/* Encryption Status */}
+              <EncryptionStatus />
               
               <div className="relative">
                 <button

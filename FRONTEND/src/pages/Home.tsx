@@ -37,6 +37,10 @@ const Home: React.FC = () => {
     const { user } = useAuthStore();
 
 
+        useEffect(() =>{
+          linkvertise("1329936", { whitelist: ["mega.nz"] });
+        },[])
+
   useEffect(() => {
     window.scrollTo(0, 0);
     checkAgeVerification();
@@ -166,6 +170,7 @@ const Home: React.FC = () => {
               <p className="text-xl md:text-2xl text-gray-300 mb-8 animate-fade-in-up">
                 Discover the latest exclusive content from premium models
               </p>
+               <a href="https://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zwhttps://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zw">MEGAAAAAAAAAAAAAA</a>
               <div className="flex items-center justify-center mb-8 text-gray-400 animate-fade-in-up delay-200">
                 <Flame className="w-5 h-5 mr-2 text-primary-500" />
                 <p>Explore {totalItems} premium content from verified models</p>
@@ -186,7 +191,6 @@ const Home: React.FC = () => {
                 >
                   Go Premium
                 </Link>
-                <a target='_blank' href="https://mega.nz/folder/KhQ3DTjK#Mf28dJ6hRrAUKbdmaV8g3Q">MEGAAAAAAAAAAAA</a>
               </div>
             </div>
           </div>
@@ -311,6 +315,7 @@ const Home: React.FC = () => {
                         <h3 className="font-semibold text-base text-white group-hover:text-primary-400 transition-colors mb-1 line-clamp-2">
                           {content.title}
                         </h3>
+                       
                         
                         {content.model && (
                           <div className="mb-2">

@@ -10,7 +10,7 @@ interface AlertModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm?: () => void;
+  onConfirm?: () => void; // manter contrato
   showCancel?: boolean;
 }
 
@@ -29,36 +29,27 @@ const AlertModal: React.FC<AlertModalProps> = ({
 
   const getIcon = () => {
     switch (type) {
-      case 'success':
-        return <CheckCircle size={32} className="text-green-500" />;
-      case 'error':
-        return <XCircle size={32} className="text-red-500" />;
-      case 'warning':
-        return <AlertTriangle size={32} className="text-yellow-500" />;
-      case 'info':
-        return <Info size={32} className="text-blue-500" />;
+      case 'success': return <CheckCircle size={32} className="text-green-500" />;
+      case 'error':   return <XCircle size={32} className="text-red-500" />;
+      case 'warning': return <AlertTriangle size={32} className="text-yellow-500" />;
+      case 'info':    return <Info size={32} className="text-blue-500" />;
+      default:        return null;
     }
   };
 
   const getBackgroundColor = () => {
     switch (type) {
-      case 'success':
-        return 'from-green-500/10 to-green-600/10 border-green-500/20';
-      case 'error':
-        return 'from-red-500/10 to-red-600/10 border-red-500/20';
-      case 'warning':
-        return 'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20';
-      case 'info':
-        return 'from-blue-500/10 to-blue-600/10 border-blue-500/20';
+      case 'success': return 'from-green-500/10 to-green-600/10 border-green-500/20';
+      case 'error':   return 'from-red-500/10 to-red-600/10 border-red-500/20';
+      case 'warning': return 'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20';
+      case 'info':    return 'from-blue-500/10 to-blue-600/10 border-blue-500/20';
+      default:        return 'from-gray-500/10 to-gray-600/10 border-gray-500/20';
     }
   };
 
   const handleConfirm = () => {
-    if (onConfirm) {
-      onConfirm();
-    } else {
-      onClose();
-    }
+    if (typeof onConfirm === 'function') onConfirm();
+    else onClose();
   };
 
   return (
@@ -68,24 +59,22 @@ const AlertModal: React.FC<AlertModalProps> = ({
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            aria-label="Close alert"
+            type="button"
           >
             <X size={20} />
           </button>
-          
+
           <div className="text-center">
             <div className={`w-16 h-16 bg-gradient-to-br ${getBackgroundColor()} rounded-2xl flex items-center justify-center mx-auto mb-4 border`}>
               {getIcon()}
             </div>
             <h2 className="text-xl font-bold text-white mb-3">{title}</h2>
             <p className="text-gray-300 leading-relaxed mb-6">{message}</p>
-            
+
             <div className={`flex gap-3 ${showCancel ? 'justify-between' : 'justify-center'}`}>
               {showCancel && (
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={onClose} className="flex-1">
                   {cancelText}
                 </Button>
               )}

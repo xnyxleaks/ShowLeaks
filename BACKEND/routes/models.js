@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const { Model, Content, Report, UserHistory } = require('../models');
 const { Op } = require('sequelize');
 const authMiddleware = require('../Middleware/Auth');
+const encryptionService = require('../utils/encryption'); // importar aqui
+
 
 function generateContentSlug(modelName, contentTitle) {
   const modelSlug = slugify(modelName, { lower: true, strict: true });
@@ -17,7 +19,6 @@ function generateReadableSlug(name) {
 }
 
 
-// Listar modelos com filtros e ordenação
 router.get('/', async (req, res) => {
   try {
     const {
@@ -118,38 +119,45 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Criar novo modelo
+async function ensureUniqueSlug(Model, base) {
+  let slug = base, i = 1;
+  while (await Model.count({ where: { slug } })) slug = `${base}-${i++}`;
+  return slug;
+}
+
 router.post('/', async (req, res) => {
   try {
     const { model_id, name } = req.body;
-    
-    if (!model_id) {
-      return res.status(400).json({ error: 'model_id é obrigatório' });
-    }
-    
-    if (!name) {
-      return res.status(400).json({ error: 'name é obrigatório' });
-    }
-    
-    let modelData = {
-      ...req.body,
-      slug: generateReadableSlug(name),
-    };
-    
-    if (modelData.birthDate) {
-      modelData.birthDate = new Date(modelData.birthDate);
-    }
+    if (!model_id) return res.status(400).json({ error: 'model_id é obrigatório' });
+    if (!name) return res.status(400).json({ error: 'name é obrigatório' });
+
+    const baseSlug = generateReadableSlug(name);
+    const finalSlug = await ensureUniqueSlug(Model, baseSlug);
+
+    const modelData = { ...req.body, slug: finalSlug };
+    if (modelData.birthDate) modelData.birthDate = new Date(modelData.birthDate);
 
     const newModel = await Model.create(modelData);
 
-    res.status(201).json({ 
-      message: 'success', 
-      slug: newModel.slug 
+    // conteúdo que deve ficar cifrado
+    const encrypted = encryptionService.encrypt({
+      message: 'success',
+      id: newModel.id,
+      model_id: newModel.model_id
+    });
+
+    // resposta final: cifrado + campos em claro
+    return res.status(201).json({
+      ...encrypted,                  // { encrypted:true, data:{...}, timestamp }
+      slug: newModel.slug,           // em claro
     });
 
   } catch (error) {
+    if (error?.name === 'SequelizeUniqueConstraintError' && error?.parent?.code === '23505') {
+      return res.status(409).json({ error: 'slug já existe' });
+    }
     console.error('Erro ao criar modelo:', error);
-    res.status(500).json({ error: 'Erro ao criar modelo', details: error });
+    return res.status(500).json({ error: 'Erro ao criar modelo', details: error.message || String(error) });
   }
 });
 

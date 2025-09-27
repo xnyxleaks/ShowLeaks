@@ -12,7 +12,7 @@ router.post('/portal', authMiddleware, async (req, res) => {
 
     // Verificar se o email corresponde ao usuário logado
     if (email !== userEmail) {
-      return res.status(403).json({ error: 'Email não autorizado' });
+      return res.status(403).json({ error: 'Email Unauthorized' });
     }
 
     // Buscar ou criar customer no Stripe
@@ -55,7 +55,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
 
     // Verificar se o email corresponde ao usuário logado
     if (email !== userEmail) {
-      return res.status(403).json({ error: 'Email não autorizado' });
+      return res.status(403).json({ error: 'Email Unauthorized' });
     }
 
     // Buscar customer no Stripe
@@ -65,7 +65,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
     });
 
     if (existingCustomers.data.length === 0) {
-      return res.status(404).json({ error: 'Customer não encontrado' });
+      return res.status(404).json({ error: 'Customer Not Found' });
     }
 
     const customer = existingCustomers.data[0];
@@ -78,7 +78,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
     });
 
     if (subscriptions.data.length === 0) {
-      return res.status(404).json({ error: 'Nenhuma assinatura ativa encontrada' });
+      return res.status(404).json({ error: 'No active subscriptions found' });
     }
 
     const subscription = subscriptions.data[0];
@@ -89,12 +89,12 @@ router.post('/cancel', authMiddleware, async (req, res) => {
     });
 
     res.json({ 
-      message: 'Assinatura cancelada com sucesso',
+      message: 'Subscription successfully canceled',
       cancelAt: new Date(subscription.current_period_end * 1000)
     });
   } catch (error) {
     console.error('Erro ao cancelar assinatura:', error);
-    res.status(500).json({ error: 'Erro ao cancelar assinatura' });
+    res.status(500).json({ error: 'Error canceling subscription' });
   }
 });
 

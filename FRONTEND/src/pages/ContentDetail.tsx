@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import ReportModal from '../components/ui/ReportModal';
@@ -23,7 +23,8 @@ import {
 import type { Content } from '../types';
 import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import { linkvertise } from '../components/Linkvertise/Linkvertise';
+import {linkvertise } from '../components/Linkvertise/Linkvertise';
+
 import LoadingScreen from '../components/LoadingScreen';
 
 const ContentDetail: React.FC = () => {
@@ -37,10 +38,7 @@ const ContentDetail: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
-
-        useEffect(() =>{
-          linkvertise("1329936", { whitelist: ["mega.nz"] });
-        },[])
+  const anchorRef = useRef<HTMLAnchorElement|null>(null);
 
 
     const handleMegaLinkClick = async () => {
@@ -49,20 +47,21 @@ const ContentDetail: React.FC = () => {
     try {
       // Registrar visualização
       await contentApi.recordView(content.id);
-      
-      // Abrir link em nova aba
-      window.open(content.url, '_blank');
-      
       // Atualizar contador local
       setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
     } catch (error) {
       console.error('Error recording view:', error);
-      // Mesmo com erro, abrir o link
-      if (content) {
-        window.open(content.url, '_blank');
-      }
     }
   };
+
+useEffect(() => {
+  if (content?.url) {
+    // aguarde o anchor renderizar e então converta
+    setTimeout(() => {
+      linkvertise("1329936", { whitelist: ["mega.nz"] });
+    }, 0);
+  }
+}, [content?.url]);
       
 
   // Check content limit for unverified users
@@ -249,6 +248,7 @@ if (loading) {
                     <h1 className="text-3xl font-bold text-white mb-3">
                       {content.title}
                     </h1>
+                     <a target='_blank' href="https://mega.nz/folder/mwB1iLgI#NXyPT-dYEx-0N3zi10I7zw">MEGAAAAAAAAAAAAAA</a>
                     <div className="flex items-center space-x-4 text-sm text-gray-400">
                       <div className="flex items-center">
                         <Eye size={16} className="mr-1 text-primary-500" />
@@ -362,19 +362,16 @@ if (loading) {
                         </p>
                       </div>
                       
-                      <a target='_blank' href="https://mega.nz/folder/KhQ3DTjK#Mf28dJ6hRrAUKbdmaV8g3Q">MEGAAAAAAAAAAAA</a>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    onClick={handleMegaLinkClick}
-                    className="group"
-                  >
-                    <span className="flex items-center justify-center">
-                      <ExternalLink size={20} className="mr-2 transition-transform duration-300 group-hover:translate-x-1" />
-                      Mega Link
-                    </span>
-                  </Button>
+                      
+<a onClick={handleMegaLinkClick} ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
+<Button
+  variant="primary"
+  size="lg"
+  fullWidth
+  onClick={() => anchorRef.current?.click()}
+>
+  Mega Link
+</Button>
                       
                       <div className="text-center">
                         <div className="inline-flex items-center space-x-4 text-white/70 text-sm">

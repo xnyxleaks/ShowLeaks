@@ -4,7 +4,7 @@ const router = express.Router();
 const { Content, Model, UserHistory } = require('../models');
 const { Op } = require('sequelize');
 const slugify = require('slugify');
-
+const encryptionService = require('../utils/encryption');
 // util: slug = <slug-da-modelo>-<slug-do-título>(-<contador> quando houver repetição do título para a mesma modelo)
 async function generateContentSlug(modelName, contentTitle, modelId) {
   const modelSlug = slugify(modelName, { lower: true, strict: true });
@@ -135,28 +135,37 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: 'Modelo não encontrado com o model_id fornecido' });
     }
 
-    // Geração do slug conforme regra: <slug-da-modelo>-<slug-do-título>(-<contador>)
+    // gera slug
     contentData.slug = await generateContentSlug(model.name, contentData.title, contentData.model_id);
 
     // info
     if (contentData.info) {
       const { images, videos, size } = contentData.info;
       const info = {};
-      if (images > 0) info.images = parseInt(images);
-      if (videos > 0) info.videos = parseInt(videos);
-      if (size > 0) info.size = parseInt(size);
+      if (Number(images) > 0) info.images = parseInt(images);
+      if (Number(videos) > 0) info.videos = parseInt(videos);
+      if (Number(size) > 0)   info.size   = parseInt(size);
       contentData.info = Object.keys(info).length ? info : null;
     }
 
     const newContent = await Content.create(contentData);
 
-    res.status(201).json({
+    // cifra apenas os dados internos
+    const encrypted = encryptionService.encrypt({
       message: 'success',
+      id: newContent.id,
+      model_id: newContent.model_id
+    });
+
+    // devolve slug em claro + bloco cifrado
+    return res.status(201).json({
+      ...encrypted,        // { encrypted:true, data:{...}, timestamp }
       slug: newContent.slug
     });
+
   } catch (error) {
     console.error('Erro ao criar conteúdo:', error);
-    res.status(500).json({ error: 'Erro ao criar conteúdo', details: error.message });
+    return res.status(500).json({ error: 'Erro ao criar conteúdo', details: error.message });
   }
 });
 
