@@ -38,10 +38,8 @@ const ContentDetail: React.FC = () => {
   const [showContentLimit, setShowContentLimit] = useState(false);
   const { user } = useAuthStore();
   const anchorRef = useRef<HTMLAnchorElement|null>(null);
-
 const getuserdata = sessionStorage.getItem("user");
 const parsed = getuserdata ? JSON.parse(getuserdata) : null;
-
 const isPremium = parsed?.isPremium; // true no seu caso
 const isAdmin = parsed?.isAdmin; // true no seu caso
 
@@ -57,7 +55,6 @@ if(!isPremium){
     }, 3);
 }
   }
-  console.log(isAdmin)
 }, [content?.url]);
 
 
@@ -66,8 +63,6 @@ if(!isPremium){
 
     try {
       await contentApi.recordView(content.id);
-      
-      // Atualizar contador local
       setContent(prev => prev ? { ...prev, views: prev.views + 1 } : null);
     } catch (error) {
       console.error('Error recording view:', error);
@@ -131,7 +126,7 @@ if(!isPremium){
           const filtered = (relatedData.contents || []).filter(c => c.id !== contentData.id);
           setRelatedContents(filtered);
           
-          // Se não há conteúdos relacionados suficientes, carregar conteúdos gerais
+
           if (filtered.length < 3) {
             const generalData = await contentApi.getAll({ 
               limit: 8,
