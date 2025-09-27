@@ -26,10 +26,6 @@ const Models: React.FC = () => {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const { fetchUser } = useAuthStore();
 
-      useEffect(() =>{
-        linkvertise("1329936", { whitelist: ["mega.nz"] });
-      },[])
-
   useEffect(() => {
     window.scrollTo(0, 0);
     checkAgeVerification();

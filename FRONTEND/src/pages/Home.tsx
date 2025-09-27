@@ -36,11 +36,6 @@ const Home: React.FC = () => {
   const { fetchUser } = useAuthStore();
     const { user } = useAuthStore();
 
-
-        useEffect(() =>{
-          linkvertise("1329936", { whitelist: ["mega.nz"] });
-        },[])
-
   useEffect(() => {
     window.scrollTo(0, 0);
     checkAgeVerification();

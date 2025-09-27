@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import ReportModal from '../components/ui/ReportModal';
 import ContentLimitModal from '../components/ui/ContentLimitModal';
@@ -43,19 +43,19 @@ const parsed = getuserdata ? JSON.parse(getuserdata) : null;
 const isPremium = parsed?.isPremium; // true no seu caso
 const isAdmin = parsed?.isAdmin; // true no seu caso
 
-  
+  const location = useLocation(); 
 
 useEffect(() => {
-  if (content?.url) {
-    // aguarde o anchor renderizar e então converta 1329936
+  if (content) {
+    
 if(!isPremium){
       setTimeout(() => {
-      console.log("rodou")
       linkvertise("1234314", { whitelist: ["mega.nz"] });
-    }, 3);
+      console.log("rodou")
+    }, 1000);
 }
   }
-}, [content?.url]);
+}, [content,location.pathname]);
 
 
     const handleMegaLinkClick = async () => {
