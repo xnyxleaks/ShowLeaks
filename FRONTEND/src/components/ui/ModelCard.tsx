@@ -37,27 +37,45 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
     return ethnicity ? labels[ethnicity as keyof typeof labels] : '';
   };
 
-  const getTagIcon = (tag: string) => {
-    const iconMap: { [key: string]: JSX.Element } = {
-      'INFLUENCER': <Star size={12} className="text-yellow-500" />,
-      'PORN_STAR': <Crown size={12} className="text-red-500" />,
-      'TIKTOK_STAR': <Music size={12} className="text-pink-500" />,
-      'COSPLAYER': <Users size={12} className="text-purple-500" />,
-      'CHEERLEADER': <Star size={12} className="text-blue-500" />,
-      'GAMER': <Zap size={12} className="text-green-500" />,
-      'MASTURBATION': <Heart size={12} className="text-red-400" />,
-      'KISSING': <Heart size={12} className="text-pink-400" />,
-      'BOOBS_TOUCHING': <Heart size={12} className="text-orange-400" />,
-      'BOOBS_LICKING': <Heart size={12} className="text-red-400" />,
-      'FINGERING': <Heart size={12} className="text-purple-400" />,
-      'DILDO': <Zap size={12} className="text-blue-400" />,
-      'ORAL': <Heart size={12} className="text-green-400" />,
-      'BLOWJOB': <Heart size={12} className="text-indigo-400" />,
-      'VAGINAL': <Heart size={12} className="text-pink-400" />,
-      'DILDO_BLOWJOB': <Zap size={12} className="text-cyan-400" />
-    };
-    return iconMap[tag] || <Star size={12} className="text-gray-400" />;
+const getTagIcon = (tag: string) => {
+  const iconMap: { [key: string]: JSX.Element } = {
+    'INFLUENCER': <Star size={12} className="text-yellow-500" />,
+    'PORN_STAR': <Crown size={12} className="text-red-500" />,
+    'TIKTOK_STAR': <Music size={12} className="text-pink-500" />,
+    'COSPLAYER': <Users size={12} className="text-purple-500" />,
+    'CHEERLEADER': <Star size={12} className="text-blue-500" />,
+    'GAMER': <Zap size={12} className="text-green-500" />,
+    'MASTURBATION': <Heart size={12} className="text-red-400" />,
+    'KISSING': <Heart size={12} className="text-pink-400" />,
+    'BOOBS_TOUCHING': <Heart size={12} className="text-orange-400" />,
+    'BOOBS_LICKING': <Heart size={12} className="text-red-400" />,
+    'FINGERING': <Heart size={12} className="text-purple-400" />,
+    'DILDO': <Zap size={12} className="text-blue-400" />,
+    'ORAL': <Heart size={12} className="text-green-400" />,
+    'BLOWJOB': <Heart size={12} className="text-indigo-400" />,
+    'VAGINAL': <Heart size={12} className="text-pink-400" />,
+    'DILDO_BLOWJOB': <Zap size={12} className="text-cyan-400" />,
+
+    // novos
+    'MODEL': <Users size={12} className="text-gray-500" />,
+    'MUSICIAN': <Music size={12} className="text-yellow-600" />,
+    'CAMGIRL': <Crown size={12} className="text-pink-600" />,
+    'IDOL': <Star size={12} className="text-purple-600" />,
+    'AV': <Zap size={12} className="text-red-600" />,
+    'FETISH_MODEL': <Heart size={12} className="text-rose-500" />,
+    'BUSINESS_WOMAN': <Users size={12} className="text-blue-600" />,
+    'YOUTUBER': <Music size={12} className="text-red-500" />,
+    'MILF_PORN_STAR': <Crown size={12} className="text-orange-600" />,
+    'EXOTIC_DANCER': <Zap size={12} className="text-pink-500" />,
+    'CENTERFOLD': <Star size={12} className="text-indigo-500" />,
+    'ACTRESS': <Users size={12} className="text-green-600" />,
+    'DIGITAL_CREATOR': <Zap size={12} className="text-teal-500" />,
+    'PHOTOGRAPHER': <Camera size={12} className="text-gray-600" />,
+    'PLAYBOY_MODEL': <Crown size={12} className="text-rose-600" />
   };
+  return iconMap[tag] || <Star size={12} className="text-gray-400" />;
+};
+
 
   const calculateAge = (birthDate?: string) => {
     if (!birthDate) return null;
