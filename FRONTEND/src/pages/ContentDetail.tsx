@@ -50,7 +50,7 @@ useEffect(() => {
     
 if(!isPremium){
       setTimeout(() => {
-      linkvertise("1234314", { whitelist: ["mega.nz"] });
+      linkvertise("1329936", { whitelist: ["mega.nz"] });
       console.log("rodou")
     }, 1000);
 }

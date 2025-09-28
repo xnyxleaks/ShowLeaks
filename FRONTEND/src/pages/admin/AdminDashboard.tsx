@@ -582,7 +582,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400 text-sm">Avg. per User</span>
-                  <span className="text-white font-medium">$9.99</span>
+                  <span className="text-white font-medium">$12.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400 text-sm">Growth</span>

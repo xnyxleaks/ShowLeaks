@@ -111,7 +111,7 @@ const Premium: React.FC = () => {
                   
                   <div className="bg-dark-300 p-6 rounded-xl text-center">
                     <div className="flex items-baseline justify-center mb-4">
-                      <span className="text-4xl font-bold text-white">$9.99</span>
+                      <span className="text-4xl font-bold text-white">$12.00</span>
                       <span className="text-gray-400 ml-1">/month</span>
                     </div>
                     
