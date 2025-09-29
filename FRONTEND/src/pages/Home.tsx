@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import type { Content, FilterOptions, SortOption } from '../types';
 import { useAuthStore } from '../store/authStore';
-import { linkvertise } from '../components/Linkvertise/Linkvertise';
 
 const ITEMS_PER_PAGE = 24;
 
@@ -87,7 +86,7 @@ const Home: React.FC = () => {
     if (!showAgeVerification) {
       loadContents();
     }
-  }, [currentPage, sortOption, searchQuery, filters, showAgeVerification]);
+  }, [currentPage, sortOption, searchQuery, filters]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -153,7 +152,7 @@ const Home: React.FC = () => {
         onExit={handleAgeVerificationExit}
       />
       
-      <main>
+      <main className={showAgeVerification ? "blur-sm pointer-events-none" : ""}>
         {/* Hero Section */}
         <section className="relative pt-20 lg:pt-28 pb-16 lg:pb-24">
           <div className="absolute inset-0 bg-gradient-to-br from-dark-400 via-dark-300 to-dark-400 z-[-1]"></div>

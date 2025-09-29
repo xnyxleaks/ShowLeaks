@@ -25,6 +25,8 @@ import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { linkvertise } from '../components/Linkvertise/Linkvertise';
 import LoadingScreen from '../components/LoadingScreen';
+import AgeVerificationModal from '../components/ui/AgeVerificationModal';
+import { ageVerificationApi } from '../services/api';
 
 const ContentDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -36,29 +38,54 @@ const ContentDetail: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showContentLimit, setShowContentLimit] = useState(false);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
   const { user } = useAuthStore();
   const anchorRef = useRef<HTMLAnchorElement|null>(null);
-const getuserdata = sessionStorage.getItem("user");
-const parsed = getuserdata ? JSON.parse(getuserdata) : null;
-const isPremium = parsed?.isPremium; // true no seu caso
-const isAdmin = parsed?.isAdmin; // true no seu caso
+
+  const getuserdata = sessionStorage.getItem("user");
+  const parsed = getuserdata ? JSON.parse(getuserdata) : null;
+  const isPremium = parsed?.isPremium;
+  const isAdmin = parsed?.isAdmin;
 
   const location = useLocation(); 
 
-useEffect(() => {
-  if (content) {
-    
-if(!isPremium){
-      setTimeout(() => {
-      linkvertise("1329936", { whitelist: ["mega.nz"] });
-      console.log("rodou")
-    }, 700);
-}
-  }
-}, [content,location.pathname]);
+  useEffect(() => {
+    if (content) {
+      if (!isPremium) {
+        setTimeout(() => {
+          linkvertise("1404433", { whitelist: ["mega.nz"] });
+        }, 700);
+      }
+    }
+  }, [content, location.pathname]);
 
+  useEffect(() => {
+    const checkAge = async () => {
+      const ageConfirmed = sessionStorage.getItem('ageConfirmed');
+      let needs = false;
+      if (ageConfirmed !== 'true') {
+        try {
+          const status = await ageVerificationApi.getStatus();
+          needs = !status.ageConfirmed;
+        } catch {
+          needs = true;
+        }
+      }
+      setShowAgeVerification(needs);
+    };
+    checkAge();
+  }, []);
 
-    const handleMegaLinkClick = async () => {
+  const handleAgeVerificationConfirm = () => {
+    sessionStorage.setItem('ageConfirmed', 'true');
+    setShowAgeVerification(false);
+  };
+
+  const handleAgeVerificationExit = () => {
+    window.location.href = 'https://www.google.com';
+  };
+
+  const handleMegaLinkClick = async () => {
     if (!content) return;
 
     try {
@@ -69,7 +96,6 @@ if(!isPremium){
     }
   };
       
-
   // Check content limit for unverified users
   useEffect(() => {
     if (user && !user.isVerified) {
@@ -88,8 +114,6 @@ if(!isPremium){
         return;
       }
 
-
-
       // Check content limit for unverified users
       if (user && !user.isVerified) {
         const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
@@ -99,8 +123,6 @@ if(!isPremium){
           return;
         }
 
-        
-        
         // Add current content to viewed list
         if (!viewedContent.includes(slug)) {
           viewedContent.push(slug);
@@ -109,7 +131,6 @@ if(!isPremium){
       }
 
       try {
-
         setLoading(true);
         
         // Carregar dados do conteúdo
@@ -126,7 +147,6 @@ if(!isPremium){
           const filtered = (relatedData.contents || []).filter(c => c.id !== contentData.id);
           setRelatedContents(filtered);
           
-
           if (filtered.length < 3) {
             const generalData = await contentApi.getAll({ 
               limit: 8,
@@ -165,8 +185,6 @@ if(!isPremium){
     navigate(-1);
   };
 
-  
-
   const handleShare = async () => {
     if (!content) return;
 
@@ -179,8 +197,8 @@ if(!isPremium){
     if (navigator.share && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
-      } catch (error) {
-        console.log('Share cancelled');
+      } catch {
+        // cancelado
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
@@ -203,19 +221,15 @@ if(!isPremium){
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-const handleContentClick = (targetSlug: string) => {
-  if (!targetSlug || targetSlug === slug) return;
-  navigate(`/content/${targetSlug}`);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+  const handleContentClick = (targetSlug: string) => {
+    if (!targetSlug || targetSlug === slug) return;
+    navigate(`/content/${targetSlug}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-
-if (loading) {
-  return (
-    <LoadingScreen/>
-  );
-}
-
+  if (loading) {
+    return <LoadingScreen/>;
+  }
 
   if (!content) {
     return (
@@ -223,7 +237,6 @@ if (loading) {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Content not found</h2>
           <Button onClick={handleBack}>Go Back</Button>
-          
         </div>
       </div>
     );
@@ -231,7 +244,13 @@ if (loading) {
 
   return (
     <>
-      <main className="pt-20 min-h-screen bg-dark-300">
+      <AgeVerificationModal
+        isOpen={showAgeVerification}
+        onConfirm={handleAgeVerificationConfirm}
+        onExit={handleAgeVerificationExit}
+      />
+
+      <main className={`pt-20 min-h-screen bg-dark-300 ${showAgeVerification ? 'blur-sm pointer-events-none select-none' : ''}`}>
         <div className="container mx-auto px-4 py-8">
           <button
             onClick={handleBack}
@@ -239,7 +258,6 @@ if (loading) {
           >
             <ArrowLeft size={20} className="mr-2" />
             <span>Back</span>
-           
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -249,8 +267,7 @@ if (loading) {
               <div className="bg-dark-200 rounded-xl shadow-lg p-6 mb-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <div className="flex items-center mb-3">
-                    </div>
+                    <div className="flex items-center mb-3" />
                     <h1 className="text-3xl font-bold text-white mb-3">
                       {content.title}
                     </h1>
@@ -267,8 +284,6 @@ if (loading) {
                           year: 'numeric'
                         })}</span>
                       </div>
-                      
-                     
                     </div>
                   </div>
                   
@@ -304,10 +319,7 @@ if (loading) {
                   </div>
                 </div>
 
-                {/* Tags */}
-
                 {/* Mega Link Section */}
-                {/* Premium Download Section - Mobile First Design */}
                 <div className="relative overflow-hidden rounded-3xl shadow-2xl min-h-[400px] md:min-h-[500px]">
                   {content.model?.photoUrl && (
                     <>
@@ -324,9 +336,7 @@ if (loading) {
                     </>
                   )}
                   
-                  {/* Content */}
                   <div className="relative h-full flex flex-col justify-between p-6 md:p-8">
-                    {/* Top Section - Model Info */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center space-x-4">
                         <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden ring-4 ring-white/20 shadow-xl">
@@ -341,8 +351,6 @@ if (loading) {
                             {content.model?.name}
                           </h3>
                           <p className="text-white/80 text-sm md:text-base">Exclusive Content</p>
-                          
-
                         </div>
                       </div>
                       
@@ -354,7 +362,7 @@ if (loading) {
                       </div>
                     </div>
 
-                                        <div className="space-y-4">
+                    <div className="space-y-4">
                       <div className="text-center">
                         <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary-400 to-primary-600 rounded-3xl shadow-2xl mb-4 ring-4 ring-primary-500/30">
                           <Download size={28} className="text-white" />
@@ -367,23 +375,21 @@ if (loading) {
                         </p>
                       </div>
                       
-                      
-<a onClick={handleMegaLinkClick} ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
-<Button
-  variant="primary"
-  size="lg"
-  fullWidth
-  onClick={() => anchorRef.current?.click()}
->
-  Mega Link
-</Button>
+                      <a onClick={handleMegaLinkClick} ref={anchorRef} href={content?.url} target="_blank" rel="noopener noreferrer" style={{display:'none'}} />
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        onClick={() => anchorRef.current?.click()}
+                      >
+                        Mega Link
+                      </Button>
                       
                       <div className="text-center">
                         <div className="inline-flex items-center space-x-4 text-white/70 text-sm">
                           <div className="flex items-center">
                             <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
                             <span>Secure Download</span>
-                            
                           </div>
                           <div className="flex items-center">
                             <div className="w-2 h-2 bg-blue-400 rounded-full mr-2" />
@@ -397,7 +403,6 @@ if (loading) {
                       </div>
                     </div>
                     
-                    {/* Middle Section - Content Info */}
                     {content.info && (
                       <div className="mt-8">
                         <h4 className="text-white/90 text-sm font-medium mb-4 text-center">Package Contents</h4>
@@ -426,13 +431,9 @@ if (loading) {
                         </div>
                       </div>
                     )}
-                    
-                    {/* Bottom Section - Download Button */}
-
                   </div>
                 </div>
                 
-                {/* Like Button */}
                 <div className="mt-6 flex justify-center">
                   <LikeButton
                     contentId={content.id}
@@ -444,7 +445,6 @@ if (loading) {
                 </div>
               </div>
 
-              {/* Model Info */}
               {content.model && (
                 <div className="bg-dark-200 rounded-xl shadow-lg p-6">
                   <h3 className="text-xl font-semibold text-white mb-4">About the Model</h3>
@@ -471,7 +471,6 @@ if (loading) {
                 </div>
               )}
               
-              {/* Comments Section */}
               <div className="mt-6">
                 <CommentSection
                   contentId={content.id}

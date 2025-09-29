@@ -75,8 +75,8 @@ app.use('/age-verification', ageVerificationRouter);
 app.use('/i18n', i18nRouter);
 
 // Aplicar verificação de idade para rotas de conteúdo adulto
-app.use('/models', ageVerificationMiddleware, modelsRouter);
-app.use('/content', ageVerificationMiddleware, contentRouter);
+app.use('/models', modelsRouter);
+app.use('/content' , contentRouter);
 app.use('/reports', reportsRouter);
 app.use('/purchase', purchaseRouter);
 app.use('/billing', billingRouter);

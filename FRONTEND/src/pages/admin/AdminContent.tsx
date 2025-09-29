@@ -333,7 +333,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
                 required
                 value={formData.modelSearch}
                 onChange={(e) => {
-                  setFormData({ ...formData, modelSearch: e.target.value, modelId: '' });
+                  setFormData({ ...formData, modelSearch: e.target.value, model_id: '' });
                   searchModels(e.target.value);
                 }}
                 placeholder="Search for a model..."
@@ -514,7 +514,6 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose, onSave })
               type="submit"
               variant="primary"
               fullWidth
-              disabled={loading || !formData.modelId}
               disabled={loading || !formData.model_id}
             >
               {loading ? 'Saving...' : (content ? 'Update' : 'Create')}
