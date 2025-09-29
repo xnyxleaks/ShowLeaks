@@ -99,7 +99,7 @@ const Premium: React.FC = () => {
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-white mb-2">Premium Membership</h3>
-                    <p className="text-gray-400 mb-6">Unlock the full potential of ExtremeLeaks</p>
+                    <p className="text-gray-400 mb-6">Unlock the full potential of ShowLeaks</p>
                     
                     <div className="space-y-3 mb-8">
                       <Feature text="Unlimited access to all mega packs" />

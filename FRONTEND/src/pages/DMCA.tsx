@@ -39,8 +39,8 @@ const DMCA: React.FC = () => {
               All content available on this site is freely accessible and is not uploaded by our team. 
               We do not host any content on our servers. If you suspect that your copyrighted material 
               has been reproduced in a manner that constitutes copyright infringement, please reach out 
-              to us at <a href="mailto:contact@extremeleaks.com" className="text-primary-400 hover:text-primary-300 transition-colors">
-                contact@extremeleaks.com
+              to us at <a href="mailto:contact@ShowLeaks.com" className="text-primary-400 hover:text-primary-300 transition-colors">
+                contact@ShowLeaks.com
               </a> for appropriate action.
             </p>
             

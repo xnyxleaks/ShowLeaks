@@ -282,7 +282,7 @@ const EmailReminderContent: React.FC<{ email: string; onClose: () => void }> = (
     <h2 className="text-2xl font-bold text-white mb-4">Account Created!</h2>
     
     <div className="mb-6">
-      <p className="text-white text-lg font-semibold mb-2">Welcome to ExtremeLeaks!</p>
+      <p className="text-white text-lg font-semibold mb-2">Welcome to ShowLeaks!</p>
       <p className="text-gray-300 mb-4">
         Your account has been created successfully.
       </p>

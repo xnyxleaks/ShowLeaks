@@ -77,7 +77,7 @@ const Header: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center space-x-2">
               <span className="text-xl font-bold tracking-tight">
-                <span className="text-primary-500">Extreme</span>
+                <span className="text-primary-500">Show</span>
                 <span className="text-white">Leaks</span>
               </span>
             </Link>

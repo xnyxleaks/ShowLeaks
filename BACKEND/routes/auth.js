@@ -69,10 +69,10 @@ router.post('/register', async (req, res) => {
       await transporter.sendMail({
         from: process.env.FROM_EMAIL,
         to: email,
-        subject: 'Email Verification - ExtremeLeaks',
+        subject: 'Email Verification - ShowLeaks',
         html: `
           <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
-            <h2 style="color: #3b82f6; text-align: center;">Welcome to ExtremeLeaks!</h2>
+            <h2 style="color: #3b82f6; text-align: center;">Welcome to ShowLeaks!</h2>
             <p style="font-size: 15px; line-height: 1.6; text-align: center;">
               Please click the button below to verify your email address:
             </p>
@@ -220,9 +220,9 @@ router.post('/resend-verification', async (req, res) => {
     await transporter.sendMail({
       from: process.env.FROM_EMAIL,
       to: email,
-      subject: 'Email Verification - ExtremeLeaks',
+      subject: 'Email Verification - ShowLeaks',
       html: `...same styled HTML...`,
-      text: `Email Verification - ExtremeLeaks\n\nClick the link below to verify your email:\n${verificationUrl}\n\nThis link will expire in 24 hours.`,
+      text: `Email Verification - ShowLeaks\n\nClick the link below to verify your email:\n${verificationUrl}\n\nThis link will expire in 24 hours.`,
     });
 
     res.json({ message: 'Verification email re-sent successfully.' });
@@ -250,9 +250,9 @@ router.post('/forgot-password', async (req, res) => {
     await transporter.sendMail({
       from: process.env.FROM_EMAIL,
       to: email,
-      subject: 'Reset Password - ExtremeLeaks',
+      subject: 'Reset Password - ShowLeaks',
       html: `...same styled HTML...`,
-      text: `Reset Password - ExtremeLeaks\n\nClick the link below to reset your password:\n${resetUrl}\n\nThis link will expire in 1 hour.`,
+      text: `Reset Password - ShowLeaks\n\nClick the link below to reset your password:\n${resetUrl}\n\nThis link will expire in 1 hour.`,
     });
 
     res.json({ message: 'Password reset email sent.' });
