@@ -60,6 +60,13 @@ const ContentDetail: React.FC = () => {
   }, [content, location.pathname]);
 
   useEffect(() => {
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    window.scrollTo({ top: 10, behavior: 'auto' });
+  }
+}, [slug]);
+
+  useEffect(() => {
     const checkAge = async () => {
       const ageConfirmed = sessionStorage.getItem('ageConfirmed');
       let needs = false;
