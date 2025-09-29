@@ -270,15 +270,7 @@ const Home: React.FC = () => {
                       
 
 
-                      {/* Model Content Count */}
-                      {content.model && (
-                        <div className="absolute top-2 left-2">
-                          <span className="px-3 py-1 bg-primary-500/80 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center">
-                            <Play size={12} className="mr-1" />
-                            {content.model.contentCount || 1}
-                          </span>
-                        </div>
-                      )}
+
                       
                       {/* Content Info */}
                       {content.info && (
