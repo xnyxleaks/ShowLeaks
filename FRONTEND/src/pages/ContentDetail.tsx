@@ -52,7 +52,7 @@ if(!isPremium){
       setTimeout(() => {
       linkvertise("1329936", { whitelist: ["mega.nz"] });
       console.log("rodou")
-    }, 500);
+    }, 700);
 }
   }
 }, [content,location.pathname]);
