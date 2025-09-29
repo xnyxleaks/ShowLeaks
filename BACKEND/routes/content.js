@@ -6,17 +6,20 @@ const { Op } = require('sequelize');
 const slugify = require('slugify');
 const encryptionService = require('../utils/encryption');
 // util: slug = <slug-da-modelo>-<slug-do-título>(-<contador> quando houver repetição do título para a mesma modelo)
-async function generateContentSlug(modelName, contentTitle, modelId) {
+async function generateContentSlug(modelName, contentTitle) {
   const modelSlug = slugify(modelName, { lower: true, strict: true });
   const titleSlug = slugify(contentTitle, { lower: true, strict: true });
 
-  // Conta quantos conteúdos já existem com mesmo model_id e mesmo título
-  const existingCount = await Content.count({
-    where: { model_id: modelId, title: contentTitle }
-  });
+  const baseSlug = `${modelSlug}-${titleSlug}`;
+  let slug = baseSlug;
+  let counter = 1;
 
-  const base = `${modelSlug}-${titleSlug}`;
-  return existingCount > 0 ? `${base}-${existingCount + 1}` : base;
+  // Verifica se já existe conteúdo com o mesmo slug
+  while (await Content.findOne({ where: { slug } })) {
+    slug = `${baseSlug}-${counter++}`;
+  }
+
+  return slug;
 }
 
 // Listar todos os conteúdos
