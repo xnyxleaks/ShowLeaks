@@ -221,7 +221,6 @@ router.post('/resend-verification', async (req, res) => {
       from: process.env.FROM_EMAIL,
       to: email,
       subject: 'Email Verification - ShowLeaks',
-      html: `...same styled HTML...`,
       text: `Email Verification - ShowLeaks\n\nClick the link below to verify your email:\n${verificationUrl}\n\nThis link will expire in 24 hours.`,
     });
 
@@ -251,7 +250,6 @@ router.post('/forgot-password', async (req, res) => {
       from: process.env.FROM_EMAIL,
       to: email,
       subject: 'Reset Password - ShowLeaks',
-      html: `...same styled HTML...`,
       text: `Reset Password - ShowLeaks\n\nClick the link below to reset your password:\n${resetUrl}\n\nThis link will expire in 1 hour.`,
     });
 

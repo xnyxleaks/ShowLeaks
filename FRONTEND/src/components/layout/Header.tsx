@@ -5,7 +5,6 @@ import { useAuthStore } from '../../store/authStore';
 import AuthModal from '../auth/AuthModal';
 import Button from '../ui/Button';
 import UserDropdown from './UserDropdown';
-import LanguageSelector from './LanguageSelector';
 import NotificationDropdown from './NotificationDropdown';
 import EncryptionStatus from '../ui/EncryptionStatus';
 
@@ -14,7 +13,6 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
@@ -68,11 +66,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-dark-300/95 backdrop-blur-sm shadow-lg' : 'bg-transparent'
-        }`}
-      >
+      <header className='fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-dark-300/95 backdrop-blur-sm shadow-lg'>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center space-x-2">
@@ -106,24 +100,6 @@ const Header: React.FC = () => {
               {/* Encryption Status */}
               <EncryptionStatus />
               
-              <div className="relative">
-                <button
-                  onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                  className="flex items-center text-gray-200 hover:text-primary-400 transition-colors"
-                >
-                  <Globe size={16} className="mr-1" />
-                  <ChevronDown 
-                    size={14} 
-                    className={`transition-transform duration-200 ${
-                      showLanguageSelector ? 'transform rotate-180' : ''
-                    }`} 
-                  />
-                </button>
-                
-                {showLanguageSelector && (
-                  <LanguageSelector onClose={() => setShowLanguageSelector(false)} />
-                )}
-              </div>
 
               {user ? (
                 <div className="flex items-center space-x-4">
@@ -247,29 +223,6 @@ const Header: React.FC = () => {
                 </MobileNavLink>
               )}
               
-              <div className="px-3 py-2 border-t border-dark-300 mt-2 pt-3">
-                <button
-                  onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                  className="w-full flex items-center justify-between text-gray-200 hover:text-primary-400 transition-colors"
-                >
-                  <div className="flex items-center">
-                    <Globe size={16} className="text-primary-500 mr-2" />
-                    <span className="font-medium">Language</span>
-                  </div>
-                  <ChevronDown 
-                    size={16} 
-                    className={`text-gray-400 transition-transform duration-200 ${
-                      showLanguageSelector ? 'transform rotate-180' : ''
-                    }`} 
-                  />
-                </button>
-                
-                {showLanguageSelector && (
-                  <div className="mt-2">
-                    <LanguageSelector onClose={() => setShowLanguageSelector(false)} />
-                  </div>
-                )}
-              </div>
               
               {user ? (
                 <div className="border-t border-dark-300 pt-3 mt-2">
