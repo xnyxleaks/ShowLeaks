@@ -1,31 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Star, Lock, MessageCircle, HelpCircle, CheckCircle } from 'lucide-react';
+import axios from 'axios';
+import SupportModal from '../components/ui/SupportModal';
 import Button from '../components/ui/Button';
 import AlertModal from '../components/ui/AlertModal';
 import { useAlert } from '../hooks/useAlert';
-import { Lock, Star, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+
+// Presume-se que useAlert, Button, AlertModal e SupportModal estejam disponíveis no projeto
+// via imports locais/aliased.
 
 const Premium: React.FC = () => {
-  const [isPremium, setIspremium] = useState<boolean>(false)
+  const [isPremium, setIspremium] = useState<boolean>(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const { alert, showError, showSuccess, hideAlert } = useAlert();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const token = localStorage.getItem('token');
 
+  const handlePurchase = async () => {
+    if (!token) {
+      showError('Authentication Required', 'You need to be logged in to purchase premium.');
+      return;
+    }
 
-    const token = sessionStorage.getItem('token')
-
-
-  
-    const Handlepurchase = async () => {
-      if (!token) {
-        showError('Authentication Required', 'You need to be logged in to purchase premium.');
-        return;
-      }
-      
-      // Check if user is verified
+    try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/auth/dashboard`,
         {
@@ -34,44 +35,39 @@ const Premium: React.FC = () => {
           },
         }
       );
-      
+
       if (!response.data.isVerified) {
-        showError('Email Verification Required', 'You need to verify your email before purchasing premium. Please check your inbox.');
+        showError(
+          'Email Verification Required',
+          'You need to verify your email before purchasing premium. Please check your inbox.'
+        );
         return;
       }
-    
-      try {
-      const isPremium = response.data.isPremium;
-        const email = response.data.email;
-    
-        if (isPremium) {
-          showSuccess('Already Premium', 'You already have an active premium subscription.');
-          return;
-        }
-        
-    
-        // Agora cria a sessão de compra
-        const paymentResponse = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/purchase`,
-          {
-            email,        
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-    
-        const { url } = paymentResponse.data;
-        window.open(url, "_blank");
-      } catch (err) {
-        showError('Purchase Error', 'Failed to start the purchase process. Please try again.');
+
+      const alreadyPremium = response.data.isPremium as boolean;
+      const email = response.data.email as string;
+
+      if (alreadyPremium) {
+        showSuccess('Already Premium', 'You already have an active premium subscription.');
+        return;
       }
-    };
-    
-    
-    
+
+      const paymentResponse = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/purchase`,
+        { email },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { url } = paymentResponse.data as { url: string };
+      window.open(url, '_blank');
+    } catch {
+      showError('Purchase Error', 'Failed to start the purchase process. Please try again.');
+    }
+  };
 
   return (
     <main className="pt-20 min-h-screen bg-dark-300">
@@ -94,13 +90,13 @@ const Premium: React.FC = () => {
                   <span className="font-bold text-lg text-primary-400">Coming Soon</span>
                 </div>
               </div>
-              
+
               <div className="p-8">
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-white mb-2">Premium Membership</h3>
                     <p className="text-gray-400 mb-6">Unlock the full potential of ShowLeaks</p>
-                    
+
                     <div className="space-y-3 mb-8">
                       <Feature text="Unlimited access to all mega packs" />
                       <Feature text="No ads or waiting times" />
@@ -108,35 +104,52 @@ const Premium: React.FC = () => {
                       <Feature text="Priority support" />
                     </div>
                   </div>
-                  
+
                   <div className="bg-dark-300 p-6 rounded-xl text-center">
                     <div className="flex items-baseline justify-center mb-4">
                       <span className="text-4xl font-bold text-white">$12.00</span>
                       <span className="text-gray-400 ml-1">/month</span>
                     </div>
-                    
-                    <Button 
-                      variant="primary" 
-                      size="lg" 
+
+                    <Button
+                      variant="primary"
+                      size="lg"
                       className="w-full mb-3"
-                      onClick={Handlepurchase}
+                      onClick={handlePurchase}
                     >
                       <Lock size={16} className="mr-2" />
                       Coming Soon
                     </Button>
-                    
+
                     <p className="text-xs text-gray-500">
                       Available soon. Join our waitlist.
                     </p>
                   </div>
                 </div>
+
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowSupportModal(true)}
+                  >
+                    <MessageCircle size={16} className="mr-2" />
+                    Contact Support
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowSupportModal(true)}
+                  >
+                    <HelpCircle size={16} className="mr-2" />
+                    View FAQ
+                  </Button>
+                </div>
               </div>
             </div>
-            
           </div>
         </div>
       </section>
-      
+
       <AlertModal
         isOpen={alert.isOpen}
         onClose={hideAlert}
@@ -147,6 +160,11 @@ const Premium: React.FC = () => {
         cancelText={alert.cancelText}
         onConfirm={alert.onConfirm}
         showCancel={alert.showCancel}
+      />
+
+      <SupportModal
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
       />
     </main>
   );

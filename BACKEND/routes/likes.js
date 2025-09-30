@@ -70,7 +70,19 @@ router.post('/toggle', authMiddleware, async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     const { contentId, modelId } = req.query;
-    const userId = req.headers.authorization ? req.user?.id : null;
+    
+    // Extract user ID from token if available
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = require('jsonwebtoken').verify(token, process.env.TOKEN_VERIFY_ACCESS);
+        userId = decoded.id;
+      } catch (err) {
+        // Token inválido, mas continua sem userId
+      }
+    }
 
     if (!contentId && !modelId) {
       return res.status(400).json({ error: 'É necessário fornecer contentId ou modelId' });

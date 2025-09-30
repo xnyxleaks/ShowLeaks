@@ -29,7 +29,7 @@ const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({
 
     try {
       await ageVerificationApi.confirm(true);
-      sessionStorage.setItem('ageConfirmed', 'true');
+      localStorage.setItem('ageConfirmed', 'true');
       onConfirm();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to verify age');

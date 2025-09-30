@@ -6,8 +6,6 @@ import { likesApi } from '../../services/api';
 interface LikeButtonProps {
   contentId?: number;
   modelId?: number;
-  initialLikes: number;
-  initialIsLiked: boolean;
   type: 'content' | 'model';
   size?: 'sm' | 'md' | 'lg';
   showCount?: boolean;
@@ -16,16 +14,34 @@ interface LikeButtonProps {
 const LikeButton: React.FC<LikeButtonProps> = ({
   contentId,
   modelId,
-  initialLikes,
-  initialIsLiked,
   type,
   size = 'md',
   showCount = true
 }) => {
   const { user } = useAuthStore();
-  const [likes, setLikes] = useState(initialLikes);
-  const [isLiked, setIsLiked] = useState(initialIsLiked);
+  const [likes, setLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Load initial like stats
+  React.useEffect(() => {
+    const loadLikeStats = async () => {
+      if (!contentId && !modelId) return;
+      
+      try {
+        const stats = await likesApi.getStats({ contentId, modelId });
+        setLikes(stats.totalLikes);
+        setIsLiked(stats.isLiked);
+        setInitialized(true);
+      } catch (error) {
+        console.error('Error loading like stats:', error);
+        setInitialized(true);
+      }
+    };
+
+    loadLikeStats();
+  }, [contentId, modelId]);
 
   const sizeClasses = {
     sm: 'p-2',
@@ -71,6 +87,18 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     return `${(count / 1000000).toFixed(1)}M`;
   };
 
+  if (!initialized) {
+    return (
+      <div className={`
+        flex items-center space-x-2 rounded-lg transition-all duration-200
+        ${sizeClasses[size]}
+        bg-dark-300/50 text-gray-400 border border-dark-100
+      `}>
+        <Heart size={iconSizes[size]} className="animate-pulse" />
+        {showCount && <span className="text-sm">...</span>}
+      </div>
+    );
+  }
   return (
     <button
       onClick={handleToggleLike}

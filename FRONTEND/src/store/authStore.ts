@@ -32,8 +32,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const data = await authApi.login(credentials);
   
       const user = data.user;
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(user));
   
       set({ user, loading: false });
     } catch (error) {
@@ -50,8 +50,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       
       // User is logged in immediately but needs verification for premium
       const user = data.user;
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(user));
       
       set({ user, loading: false });
     } catch (error) {
@@ -67,8 +67,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const data = await authApi.verifyEmail(token);
       
       const user = data.user;
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(user));
       
       set({ user, loading: false });
     } catch (error) {
@@ -115,31 +115,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   logout: () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('ageConfirmed');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('ageConfirmed');
     set({ user: null });
   },
 
   fetchUser: async () => {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (!token) return;
 
     try {
       const user = await authApi.getDashboard();
       set({ user });
-      sessionStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
       // If API call fails, try to use saved user data
-      const savedUser = sessionStorage.getItem('user');
+      const savedUser = localStorage.getItem('user');
       if (savedUser) {
         try {
           set({ user: JSON.parse(savedUser) });
         } catch (parseError) {
           // If saved data is corrupted, clear everything
-          sessionStorage.removeItem('token');
-          sessionStorage.removeItem('user');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
           set({ user: null });
         }
       }
@@ -149,7 +149,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   updateUser: (userData) => {
     set((state) => {
       const updatedUser = { ...state.user, ...userData } as User;
-      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       return { user: updatedUser };
     });
   },

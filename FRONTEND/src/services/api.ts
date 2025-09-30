@@ -41,13 +41,13 @@ const api = axios.create({
 
 // ---- request interceptor (auth e cabeçalhos diversos) ----
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers = config.headers ?? {};
     (config.headers as any).Authorization = `Bearer ${token}`;
   }
 
-  const ageConfirmed = sessionStorage.getItem("ageConfirmed");
+  const ageConfirmed = localStorage.getItem("ageConfirmed");
   if (ageConfirmed === "true") {
     config.headers = config.headers ?? {};
     (config.headers as any)["x-age-confirmed"] = "true";

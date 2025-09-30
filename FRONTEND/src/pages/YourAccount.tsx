@@ -101,9 +101,9 @@ const YourAccount: React.FC = () => {
 
   const handleDeleteAccount = () => {
     // Logout and redirect to home
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('ageConfirmed');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('ageConfirmed');
     navigate('/');
   };
   if (!user) return null;

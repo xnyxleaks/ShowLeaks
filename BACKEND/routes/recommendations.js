@@ -11,6 +11,10 @@ router.post('/', authMiddleware, async (req, res) => {
     const userId = req.user.id;
     const { modelId, description } = req.body;
 
+    if (!modelId || !description) {
+      return res.status(400).json({ error: 'Model ID and description are required' });
+    }
+
     // Check if user is premium
     const user = await User.findByPk(userId);
     if (!user || !user.isPremium) {
@@ -58,8 +62,8 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const recommendation = await Recommendation.create({
       userId,
-      modelId,
-      description
+      modelId: parseInt(modelId),
+      description: description.trim()
     });
 
     res.status(201).json({
@@ -68,7 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating recommendation:', error);
-    res.status(500).json({ error: 'Failed to submit recommendation' });
+    res.status(500).json({ error: 'Failed to submit recommendation', details: error.message });
   }
 });
 

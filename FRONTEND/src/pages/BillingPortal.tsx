@@ -2,8 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import AlertModal from '../components/ui/AlertModal';
+import SupportModal from '../components/ui/SupportModal';
 import { useAlert } from '../hooks/useAlert';
-import { CreditCard, ArrowLeft, ExternalLink, Crown, Calendar, DollarSign, XCircle } from 'lucide-react';
+import { 
+  CreditCard, 
+  ArrowLeft, 
+  ExternalLink, 
+  Crown, 
+  Calendar, 
+  DollarSign, 
+  Circle as XCircle, 
+  MessageCircle, 
+  Circle as HelpCircle 
+} from 'lucide-react';
 import Button from '../components/ui/Button';
 import axios from 'axios';
 
@@ -12,6 +23,7 @@ const BillingPortal: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const { alert, showError, showSuccess, hideAlert } = useAlert();
 
   useEffect(() => {
@@ -26,7 +38,7 @@ const BillingPortal: React.FC = () => {
 
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('token');
+      const token = localStorage.getItem('token');
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/billing/portal`,
         { email: user.email },
@@ -40,48 +52,6 @@ const BillingPortal: React.FC = () => {
       showError('Portal Error', 'Error opening billing portal. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!user) return;
-
-    showError(
-      'Confirm Cancellation',
-      'Are you sure you want to cancel your subscription? You will lose premium access at the end of your billing period.',
-      {
-        showCancel: true,
-        confirmText: 'Yes, Cancel',
-        cancelText: 'Keep Subscription',
-        onConfirm: async () => {
-          await performCancellation();
-        },
-      }
-    );
-  };
-
-  const performCancellation = async () => {
-    setCancelLoading(true);
-    try {
-      const token = sessionStorage.getItem('token');
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/billing/cancel`,
-        { email: user!.email },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      showSuccess(
-        'Subscription Cancelled',
-        'Subscription cancelled successfully. You will retain premium access until the end of your billing period.',
-        () => window.location.reload()
-      );
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      showError('Cancellation Error', 'Error cancelling subscription. Please try again or contact support.');
-    } finally {
-      setCancelLoading(false);
     }
   };
 
@@ -188,30 +158,6 @@ const BillingPortal: React.FC = () => {
             <p className="text-gray-500 text-sm mt-4">
               You will be redirected to Stripe&apos;s secure billing portal in a new tab.
             </p>
-
-            {user.isPremium && (
-              <div className="mt-8 pt-6 border-t border-dark-100">
-                <h3 className="text-lg font-semibold text-white mb-4">Cancel Subscription</h3>
-                <p className="text-gray-300 mb-4">
-                  You can cancel your subscription at any time. You&apos;ll retain premium access until the end of your current billing period.
-                </p>
-                <Button
-                  variant="danger"
-                  onClick={handleCancelSubscription}
-                  disabled={cancelLoading}
-                  className="flex items-center"
-                >
-                  {cancelLoading ? (
-                    'Cancelling...'
-                  ) : (
-                    <>
-                      <XCircle size={18} className="mr-2" />
-                      Cancel Subscription
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Support */}
@@ -221,8 +167,20 @@ const BillingPortal: React.FC = () => {
               If you have any questions about your subscription or billing, please contact our support team.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="outline">Contact Support</Button>
-              <Button variant="ghost">View FAQ</Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowSupportModal(true)}
+              >
+                <MessageCircle size={16} className="mr-2" />
+                Contact Support
+              </Button>
+              <Button 
+                variant="ghost"
+                onClick={() => setShowSupportModal(true)}
+              >
+                <HelpCircle size={16} className="mr-2" />
+                View FAQ
+              </Button>
             </div>
           </div>
         </div>
@@ -236,8 +194,11 @@ const BillingPortal: React.FC = () => {
         message={alert.message}
         confirmText={alert.confirmText}
         cancelText={alert.cancelText}
-        onConfirm={alert.onConfirm}
-        showCancel={alert.showCancel}
+      />
+
+      <SupportModal 
+        isOpen={showSupportModal} 
+        onClose={() => setShowSupportModal(false)} 
       />
     </main>
   );

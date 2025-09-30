@@ -1,18 +1,28 @@
 import React from 'react';
-import { Flame } from 'lucide-react';
+import { Flame, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SupportModal from '../ui/SupportModal';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const [showSupportModal, setShowSupportModal] = React.useState(false);
 
   return (
-    <footer className="bg-dark-400 py-8 mt-auto">
+    <>
+      <footer className="bg-dark-400 py-8 mt-auto">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-6 md:mb-0">
             <span className="text-lg font-bold tracking-tight">
               <span className="text-primary-500">Show</span>
               <span className="text-white">Leaks</span>
+              <button 
+                onClick={() => setShowSupportModal(true)}
+                className="text-gray-400 hover:text-primary-500 transition-colors flex items-center"
+              >
+                <MessageCircle size={16} className="mr-1" />
+                Contact Support
+              </button>
             </span>
           </div>
           
@@ -35,8 +45,13 @@ const Footer: React.FC = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
-};
+      </footer>
 
+      <SupportModal 
+        isOpen={showSupportModal} 
+        onClose={() => setShowSupportModal(false)} 
+      />
+    </>
+  )
+}
 export default Footer;

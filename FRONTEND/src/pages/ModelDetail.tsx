@@ -7,38 +7,12 @@ import SearchInput from '../components/ui/SearchInput';
 import Pagination from '../components/ui/pagination';
 import CommentSection from '../components/ui/CommentSection';
 import LikeButton from '../components/ui/LikeButton';
-import { 
-  ArrowLeft, 
-  Share2, 
-  MoreVertical, 
-  Eye, 
-  Calendar,
-  Ruler,
-  Weight,
-  MapPin,
-  Heart,
-  Star,
-  Music,
-  Users,
-  Crown,
-  Zap,
-  Camera,
-  User,
-  Flag,
-  X,
-  Clock,
-  TrendingUp,
-  Filter,
-  Play,
-  Image as ImageIcon,
-  Video,
-  HardDrive
-} from 'lucide-react';
+import { ArrowLeft, Share2, MoveVertical as MoreVertical, Eye, Calendar, Ruler, Weight, MapPin, Heart, Star, Music, Users, Crown, Zap, Camera, User, Flag, X, Clock, TrendingUp, ListFilter as Filter, Play, Image as ImageIcon, Video, HardDrive } from 'lucide-react';
 import type { Model, Content, FilterOptions, SortOption } from '../types';
 import { modelsApi, contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 24;
 
 const ModelDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -134,30 +108,43 @@ const ModelDetail: React.FC = () => {
 
   const getTagIcon = (tag: string) => {
     const iconMap: { [key: string]: JSX.Element } = {
-      'PROFESSION_INFLUENCER': <Star size={16} className="text-yellow-500" />,
-      'PROFESSION_PORN_STAR': <Crown size={16} className="text-red-500" />,
-      'PROFESSION_TIKTOK_STAR': <Music size={16} className="text-pink-500" />,
-      'PROFESSION_COSPLAYER': <Users size={16} className="text-purple-500" />,
-      'PROFESSION_CHEERLEADER': <Star size={16} className="text-blue-500" />,
-      'PROFESSION_GAMER': <Zap size={16} className="text-green-500" />,
-      'CATEGORY_MASTURBATION': <Heart size={16} className="text-red-400" />,
-      'CATEGORY_KISSING': <Heart size={16} className="text-pink-400" />,
-      'CATEGORY_BOOBS_TOUCHING': <Heart size={16} className="text-orange-400" />,
-      'CATEGORY_BOOBS_LICKING': <Heart size={16} className="text-red-400" />,
-      'CATEGORY_FINGERING': <Heart size={16} className="text-purple-400" />,
-      'CATEGORY_DILDO': <Zap size={16} className="text-blue-400" />,
-      'CATEGORY_ORAL': <Heart size={16} className="text-green-400" />,
-      'CATEGORY_BLOWJOB': <Heart size={16} className="text-indigo-400" />,
-      'CATEGORY_VAGINAL': <Heart size={16} className="text-pink-400" />,
-      'CATEGORY_DILDO_BLOWJOB': <Zap size={16} className="text-cyan-400" />
+      'INFLUENCER': <Star size={16} className="text-yellow-500" />,
+      'PORN_STAR': <Crown size={16} className="text-red-500" />,
+      'TIKTOK_STAR': <Music size={16} className="text-pink-500" />,
+      'COSPLAYER': <Users size={16} className="text-purple-500" />,
+      'CHEERLEADER': <Star size={16} className="text-blue-500" />,
+      'GAMER': <Zap size={16} className="text-green-500" />,
+      'MASTURBATION': <Heart size={16} className="text-red-400" />,
+      'KISSING': <Heart size={16} className="text-pink-400" />,
+      'BOOBS_TOUCHING': <Heart size={16} className="text-orange-400" />,
+      'BOOBS_LICKING': <Heart size={16} className="text-red-400" />,
+      'FINGERING': <Heart size={16} className="text-purple-400" />,
+      'DILDO': <Zap size={16} className="text-blue-400" />,
+      'ORAL': <Heart size={16} className="text-green-400" />,
+      'BLOWJOB': <Heart size={16} className="text-indigo-400" />,
+      'VAGINAL': <Heart size={16} className="text-pink-400" />,
+      'DILDO_BLOWJOB': <Zap size={16} className="text-cyan-400" />,
+      'MODEL': <Users size={16} className="text-gray-500" />,
+      'MUSICIAN': <Music size={16} className="text-yellow-600" />,
+      'CAMGIRL': <Crown size={16} className="text-pink-600" />,
+      'IDOL': <Star size={16} className="text-purple-600" />,
+      'AV': <Zap size={16} className="text-red-600" />,
+      'FETISH_MODEL': <Heart size={16} className="text-rose-500" />,
+      'BUSINESS_WOMAN': <Users size={16} className="text-blue-600" />,
+      'YOUTUBER': <Music size={16} className="text-red-500" />,
+      'MILF_PORN_STAR': <Crown size={16} className="text-orange-600" />,
+      'EXOTIC_DANCER': <Zap size={16} className="text-pink-500" />,
+      'CENTERFOLD': <Star size={16} className="text-indigo-500" />,
+      'ACTRESS': <Users size={16} className="text-green-600" />,
+      'DIGITAL_CREATOR': <Zap size={16} className="text-teal-500" />,
+      'PHOTOGRAPHER': <Camera size={16} className="text-gray-600" />,
+      'PLAYBOY_MODEL': <Crown size={16} className="text-rose-600" />
     };
     return iconMap[tag] || <Star size={16} className="text-gray-400" />;
   };
 
   const formatTagName = (tag: string) => {
     return tag
-      .replace('PROFESSION_', '')
-      .replace('CATEGORY_', '')
       .replace(/_/g, ' ')
       .toLowerCase()
       .replace(/\b\w/g, l => l.toUpperCase());
@@ -317,8 +304,6 @@ const ModelDetail: React.FC = () => {
                     <LikeButton
                       modelId={model.id}
                       type="model"
-                      initialLikes={0}
-                      initialIsLiked={false}
                       size="lg"
                     />
                     

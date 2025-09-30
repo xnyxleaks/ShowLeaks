@@ -5,21 +5,7 @@ import ReportModal from '../components/ui/ReportModal';
 import ContentLimitModal from '../components/ui/ContentLimitModal';
 import CommentSection from '../components/ui/CommentSection';
 import LikeButton from '../components/ui/LikeButton';
-import { 
-  ArrowLeft, 
-  ExternalLink, 
-  Share2, 
-  MoreVertical, 
-  Eye, 
-  Calendar,
-  User,
-  Flag,
-  Download,
-  Play,
-  Image as ImageIcon,
-  Video,
-  HardDrive
-} from 'lucide-react';
+import { ArrowLeft, ExternalLink, Share2, MoveVertical as MoreVertical, Eye, Calendar, User, Flag, Download, Play, Image as ImageIcon, Video, HardDrive } from 'lucide-react';
 import type { Content } from '../types';
 import { contentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -39,25 +25,29 @@ const ContentDetail: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showContentLimit, setShowContentLimit] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
-  const { user } = useAuthStore();
+  const { user, fetchUser } = useAuthStore();
   const anchorRef = useRef<HTMLAnchorElement|null>(null);
 
-  const getuserdata = sessionStorage.getItem("user");
+  const getuserdata = localStorage.getItem("user");
   const parsed = getuserdata ? JSON.parse(getuserdata) : null;
   const isPremium = parsed?.isPremium;
   const isAdmin = parsed?.isAdmin;
 
   const location = useLocation(); 
 
+    useEffect(() => {
+    fetchUser(); 
+  }, [fetchUser]);
+
   useEffect(() => {
     if (content) {
-      if (!isPremium) {
+      if (!user?.isPremium) {
         setTimeout(() => {
           linkvertise("1404433", { whitelist: ["mega.nz"] });
         }, 700);
       }
     }
-  }, [content, location.pathname]);
+  }, [content, location.pathname, user]);
 
   useEffect(() => {
   const isMobile = window.innerWidth <= 768;
@@ -68,7 +58,7 @@ const ContentDetail: React.FC = () => {
 
   useEffect(() => {
     const checkAge = async () => {
-      const ageConfirmed = sessionStorage.getItem('ageConfirmed');
+      const ageConfirmed = localStorage.getItem('ageConfirmed');
       let needs = false;
       if (ageConfirmed !== 'true') {
         try {
@@ -84,7 +74,7 @@ const ContentDetail: React.FC = () => {
   }, []);
 
   const handleAgeVerificationConfirm = () => {
-    sessionStorage.setItem('ageConfirmed', 'true');
+    localStorage.setItem('ageConfirmed', 'true');
     setShowAgeVerification(false);
   };
 
@@ -106,7 +96,7 @@ const ContentDetail: React.FC = () => {
   // Check content limit for unverified users
   useEffect(() => {
     if (user && !user.isVerified) {
-      const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
+      const viewedContent = JSON.parse(localStorage.getItem('viewedContent') || '[]');
       if (viewedContent.length >= 3 && !viewedContent.includes(slug!)) {
         setShowContentLimit(true);
         return;
@@ -123,7 +113,7 @@ const ContentDetail: React.FC = () => {
 
       // Check content limit for unverified users
       if (user && !user.isVerified) {
-        const viewedContent = JSON.parse(sessionStorage.getItem('viewedContent') || '[]');
+        const viewedContent = JSON.parse(localStorage.getItem('viewedContent') || '[]');
         if (viewedContent.length >= 3 && !viewedContent.includes(slug)) {
           setShowContentLimit(true);
           setLoading(false);
@@ -133,7 +123,7 @@ const ContentDetail: React.FC = () => {
         // Add current content to viewed list
         if (!viewedContent.includes(slug)) {
           viewedContent.push(slug);
-          sessionStorage.setItem('viewedContent', JSON.stringify(viewedContent));
+          localStorage.setItem('viewedContent', JSON.stringify(viewedContent));
         }
       }
 
@@ -445,8 +435,6 @@ const ContentDetail: React.FC = () => {
                   <LikeButton
                     contentId={content.id}
                     type="content"
-                    initialLikes={0}
-                    initialIsLiked={false}
                     size="lg"
                   />
                 </div>

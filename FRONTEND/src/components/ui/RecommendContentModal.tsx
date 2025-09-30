@@ -139,7 +139,7 @@ const RecommendContentModal: React.FC<RecommendContentModalProps> = ({ isOpen, o
             {remainingRecommendations <= 0 ? (
               <div className="text-center py-8">
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
-                  <AlertTriangle size={32} className="text-red-500 mx-auto mb-4" />
+                  <Star size={32} className="text-red-500 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-white mb-2">Limit Reached</h3>
                   <p className="text-gray-300">
                     You have used all your recommendations for this month. Premium members can submit up to 2 recommendations per month.

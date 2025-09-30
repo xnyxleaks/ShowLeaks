@@ -32,7 +32,7 @@ const Models: React.FC = () => {
   }, []);
 
   const checkAgeVerification = async () => {
-    const ageConfirmed = sessionStorage.getItem('ageConfirmed');
+    const ageConfirmed = localStorage.getItem('ageConfirmed');
     if (ageConfirmed !== 'true') {
       try {
         const status = await ageVerificationApi.getStatus();
